@@ -5,9 +5,9 @@ import pl.zulov.data.PointRepository
 import kotlin.random.Random
 import kotlin.system.measureNanoTime
 
-const val STEPS_NO = 5000
+const val STEPS_NO = 12000
 const val POPULATION_SIZE = 1000
-const val SURVIVOR_RATE = 0.9
+const val SURVIVOR_RATE = 0.8
 const val MUTATION_CHANCE = 0.05
 const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toInt()
 const val CHILDREN_TO_PARENTS_SIZE = (POPULATION_SIZE * 0.9).toInt()

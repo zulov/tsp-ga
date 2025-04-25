@@ -10,7 +10,7 @@ val resolver = Resolver(pointRepository)
 
 fun main() {
     val loadTime = measureTimeMillis {
-        pointRepository.load("xqf131")
+        pointRepository.load("gr9882")
     }
     val processTime = measureTimeMillis {
         val (distance, order) = resolver.process()
