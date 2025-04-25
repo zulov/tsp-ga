@@ -1,12 +1,23 @@
 package pl.zulov
 
+import pl.zulov.algo.Resolver
+import pl.zulov.algo.STEPS_NO
+import pl.zulov.data.PointRepository
+import kotlin.system.measureTimeMillis
+
+val pointRepository = PointRepository()
+val resolver = Resolver(pointRepository)
 
 fun main() {
-    val name = "Kotlin"
-
-    println("Hello, " + name + "!")
-
-    for (i in 1..5) {
-        println("i = $i")
+    val loadTime = measureTimeMillis {
+        pointRepository.load("xqf131")
     }
+    val processTime = measureTimeMillis {
+        val (distance, order) = resolver.process()
+
+        println("Distance: $distance")
+        println("Order: ${order.joinToString(",") { it.toString() }}")
+    }
+    println("Time to load file: $loadTime ms")
+    println("Time process: $processTime ms, and per step: ${processTime / STEPS_NO} ms")
 }
