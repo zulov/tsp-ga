@@ -6,23 +6,36 @@ class CrossoverService {
 
     private lateinit var set: BooleanArray
 
-    fun crossover(parents: List<List<Int>>, populationSize:Int): List<List<Int>> =
+    fun crossover(parents: List<IntArray>, populationSize: Int): List<IntArray> =
         (0 until populationSize)
             .map { crossover(parents.random(), parents.random()) }
 
-    private fun crossover(
-        parent1: List<Int>,
-        parent2: List<Int>,
-    ): List<Int> {
-        val firstHalf = parent1.subList(0, Random.nextInt(parent1.size))
-        firstHalf.forEach { set[it] = true }
-        val secondHalf = parent2.filter { !set[it] }
-        firstHalf.forEach { set[it] = false }
-        return firstHalf + secondHalf
+    fun crossover(
+        parent1: IntArray,
+        parent2: IntArray,
+    ): IntArray {
+        val pivot = Random.nextInt(parent1.size)
+        val result = IntArray(parent1.size)
+        var index = 0
+
+        for (i in 0 until pivot) {
+            val element = parent1[i]
+            result[index++] = element
+            set[element] = true
+        }
+
+        for (element in parent2) {
+            if (!set[element]) {
+                result[index++] = element
+            } else {
+                set[element] = false
+            }
+        }
+        return result
     }
 
     fun init(size: Int) {
-        set = BooleanArray(size)
+        set = BooleanArray(size) { false }
     }
 
 }
