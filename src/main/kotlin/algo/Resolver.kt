@@ -4,8 +4,8 @@ import pl.zulov.data.PathResult
 import pl.zulov.data.PointRepository
 import kotlin.random.Random
 
-const val STEPS_NO = 1000
-const val POPULATION_SIZE = 1000
+const val STEPS_NO = 100
+const val POPULATION_SIZE = 50000
 const val SURVIVOR_RATE = 0.8
 const val MUTATION_CHANCE = 0.05
 const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toInt()
@@ -25,10 +25,10 @@ class Resolver(
         var parents: List<PathResult> = emptyList()
         for (i in 0 until STEPS_NO) {
             parents = rateSortKill(children)
+            val parentsPaths = parents.map { it.path }
+            children = crossOverAndMutate(parentsPaths)
 
-            children = crossOverAndMutate(parents.map { it.path })
-
-            children += parents.take(POPULATION_SIZE - children.size).map { it.path }
+            children += parentsPaths.take(POPULATION_SIZE - children.size)
             if ((i + 1) % 100 == 0) {
                 println(
                     "Progress: ${(i + 1)}/$STEPS_NO, " +
@@ -72,10 +72,11 @@ class Resolver(
     private fun score(path: IntArray): Int {
         var totalCost = 0
         val iterator = path.iterator()
-        val iterator2 = path.iterator()
-        iterator2.next() // Skip the first element
-        while (iterator2.hasNext()) {
-            totalCost += costService.getCost(iterator.next(), iterator2.next())
+        var from = iterator.next() // Skip the first element
+        while (iterator.hasNext()) {
+            val to = iterator.next()
+            totalCost += costService.getCost(from, to)
+            from = to
         }
         totalCost += costService.getCost(path.last(), path.first()) // Closing the loop
         return totalCost

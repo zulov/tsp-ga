@@ -14,21 +14,20 @@ class CrossoverService {
         parent1: IntArray,
         parent2: IntArray,
     ): IntArray {
-        val pivot = Random.nextInt(parent1.size)
+        val pivot = Random.nextInt(0, parent1.size)
         val result = IntArray(parent1.size)
-        var index = 0
+        System.arraycopy(parent1, 0, result, 0, pivot)
 
         for (i in 0 until pivot) {
-            val element = parent1[i]
-            result[index++] = element
-            set[element] = true
+            set[parent1[i]] = true
         }
+        var index = pivot
 
-        for (element in parent2) {
-            if (!set[element]) {
-                result[index++] = element
+        for (id in parent2) {
+            if (set[id]) {
+                set[id] = false
             } else {
-                set[element] = false
+                result[index++] = id
             }
         }
         return result
