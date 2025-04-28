@@ -4,8 +4,8 @@ import pl.zulov.data.PathResult
 import pl.zulov.data.PointRepository
 import kotlin.random.Random
 
-const val STEPS_NO = 100
-const val POPULATION_SIZE = 50000
+const val STEPS_NO = 5000
+const val POPULATION_SIZE = 1000
 const val SURVIVOR_RATE = 0.8
 const val MUTATION_CHANCE = 0.05
 const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toInt()
@@ -65,9 +65,11 @@ class Resolver(
 
     private fun rateSortKill(
         children: List<IntArray>,
-    ): List<PathResult> = children.map { PathResult(score(it), it) }
-        .sortedBy { it.result }
-        .take(SURVIVOR_NUMBER)
+    ): List<PathResult> = children.parallelStream()
+        .map { PathResult(score(it), it) }
+        .sorted { a, b -> a.result.compareTo(b.result) }
+        .limit(SURVIVOR_NUMBER.toLong())
+        .toList()
 
     private fun score(path: IntArray): Int {
         var totalCost = 0
