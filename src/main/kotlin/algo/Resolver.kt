@@ -18,7 +18,7 @@ class Resolver(
 ) {
     private val crossoverService = CrossoverService()
     private val costService = CostService()
-    private val decimalFormat = DecimalFormat("000.0")
+    private val decimalFormat = DecimalFormat("00.0")
 
     fun process(): PathResult {
         val points = pointRepository.getPoints().map { it.id }.toIntArray()
