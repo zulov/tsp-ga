@@ -2,14 +2,15 @@ package pl.zulov.algo
 
 import pl.zulov.data.PathResult
 import pl.zulov.data.PointRepository
+import java.util.stream.Stream
 import kotlin.random.Random
 
-const val STEPS_NO = 5000
-const val POPULATION_SIZE = 1000
+const val STEPS_NO = 10000
+const val POPULATION_SIZE = 60000
 const val SURVIVOR_RATE = 0.8
-const val MUTATION_CHANCE = 0.05
-const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toInt()
-const val CHILDREN_TO_PARENTS_SIZE = (POPULATION_SIZE * 0.9).toInt()
+const val MUTATION_CHANCE = 0.10
+const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toLong()
+const val CHILDREN_TO_PARENTS_SIZE = (POPULATION_SIZE * 0.9).toLong()
 
 class Resolver(
     val pointRepository: PointRepository
@@ -20,15 +21,14 @@ class Resolver(
     fun process(): PathResult {
         val points = pointRepository.getPoints().map { it.id }.toIntArray()
         costService.init(pointRepository.getPoints())
-        crossoverService.init(points.size)
+
         var children = createInitialPopulation(points)
         var parents: List<PathResult> = emptyList()
         for (i in 0 until STEPS_NO) {
             parents = rateSortKill(children)
-            val parentsPaths = parents.map { it.path }
-            children = crossOverAndMutate(parentsPaths)
 
-            children += parentsPaths.take(POPULATION_SIZE - children.size)
+            children = crossOverAndMutate(parents.map { it.path })
+
             if ((i + 1) % 100 == 0) {
                 println(
                     "Progress: ${(i + 1)}/$STEPS_NO, " +
@@ -41,10 +41,11 @@ class Resolver(
         return parents.first()
     }
 
-    private fun crossOverAndMutate(parents: List<IntArray>): MutableList<IntArray> =
-        crossoverService.crossover(parents, CHILDREN_TO_PARENTS_SIZE)
-            .map { mutate(it) }
-            .toMutableList()
+    private fun crossOverAndMutate(parents: List<IntArray>): List<IntArray> =
+        Stream.concat(
+            crossoverService.crossover(parents, CHILDREN_TO_PARENTS_SIZE).map { mutate(it) },
+            parents.stream().limit(POPULATION_SIZE - CHILDREN_TO_PARENTS_SIZE)
+        ).toList()
 
     private fun mutate(path: IntArray): IntArray =
         if ((Random.nextFloat() < MUTATION_CHANCE)) {
@@ -60,15 +61,15 @@ class Resolver(
             path
         }
 
-    private fun createInitialPopulation(points: IntArray): MutableList<IntArray> =
-        MutableList(POPULATION_SIZE) { points.copyOf().also { it.shuffle() } }
+    private fun createInitialPopulation(points: IntArray): List<IntArray> =
+        List(POPULATION_SIZE) { points.copyOf().also { it.shuffle() } }
 
     private fun rateSortKill(
         children: List<IntArray>,
     ): List<PathResult> = children.parallelStream()
         .map { PathResult(score(it), it) }
         .sorted { a, b -> a.result.compareTo(b.result) }
-        .limit(SURVIVOR_NUMBER.toLong())
+        .limit(SURVIVOR_NUMBER)
         .toList()
 
     private fun score(path: IntArray): Int {
