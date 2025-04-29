@@ -2,13 +2,14 @@ package pl.zulov.algo
 
 import pl.zulov.data.PathResult
 import pl.zulov.data.PointRepository
+import java.text.DecimalFormat
 import java.util.stream.Stream
 import kotlin.random.Random
 
-const val STEPS_NO = 10000
-const val POPULATION_SIZE = 60000
+const val STEPS_NO = 20000
+const val POPULATION_SIZE = 100000
 const val SURVIVOR_RATE = 0.8
-const val MUTATION_CHANCE = 0.10
+const val MUTATION_CHANCE = 0.1
 const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toLong()
 const val CHILDREN_TO_PARENTS_SIZE = (POPULATION_SIZE * 0.9).toLong()
 
@@ -17,6 +18,7 @@ class Resolver(
 ) {
     private val crossoverService = CrossoverService()
     private val costService = CostService()
+    private val decimalFormat = DecimalFormat("000.0")
 
     fun process(): PathResult {
         val points = pointRepository.getPoints().map { it.id }.toIntArray()
@@ -31,7 +33,7 @@ class Resolver(
 
             if ((i + 1) % 100 == 0) {
                 println(
-                    "Progress: ${(i + 1)}/$STEPS_NO, " +
+                    "Progress: ${decimalFormat.format((i + 1) / (STEPS_NO / 100.0))}%, " +
                             "best: ${parents.first().result}, " +
                             "worst: ${parents.last().result}"
                 )
