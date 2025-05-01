@@ -6,7 +6,7 @@ import java.text.DecimalFormat
 import java.util.stream.Stream
 import kotlin.random.Random
 
-const val STEPS_NO = 20000
+const val STEPS_NO = 100
 const val POPULATION_SIZE = 100000
 const val SURVIVOR_RATE = 0.8
 const val MUTATION_CHANCE = 0.1
@@ -25,22 +25,21 @@ class Resolver(
         costService.init(pointRepository.getPoints())
 
         var children = createInitialPopulation(points)
-        var parents: List<PathResult> = emptyList()
+        var parents: List<IntArray> = emptyList()
         for (i in 0 until STEPS_NO) {
             parents = rateSortKill(children)
 
-            children = crossOverAndMutate(parents.map { it.path })
+            children = crossOverAndMutate(parents)
 
             if ((i + 1) % 100 == 0) {
                 println(
                     "Progress: ${decimalFormat.format((i + 1) / (STEPS_NO / 100.0))}%, " +
-                            "best: ${parents.first().result}, " +
-                            "worst: ${parents.last().result}"
+                            "best: ${score(parents.first())}, " +
+                            "worst: ${parents.last()}"
                 )
             }
         }
-
-        return parents.first()
+        return parents.first().let { PathResult(score(it),it) }
     }
 
     private fun crossOverAndMutate(parents: List<IntArray>): List<IntArray> =
@@ -68,10 +67,11 @@ class Resolver(
 
     private fun rateSortKill(
         children: List<IntArray>,
-    ): List<PathResult> = children.parallelStream()
+    ): List<IntArray> = children.parallelStream()
         .map { PathResult(score(it), it) }
         .sorted { a, b -> a.result.compareTo(b.result) }
         .limit(SURVIVOR_NUMBER)
+        .map { it.path }
         .toList()
 
     private fun score(path: IntArray): Int {
