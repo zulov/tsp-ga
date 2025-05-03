@@ -13,6 +13,8 @@ const val MUTATION_CHANCE = 0.1
 const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toLong()
 const val CHILDREN_TO_PARENTS_SIZE = (POPULATION_SIZE * 0.9).toLong()
 
+typealias Path = IntArray
+
 class Resolver(
     val pointRepository: PointRepository
 ) {
@@ -43,13 +45,13 @@ class Resolver(
         return parents.first()
     }
 
-    private fun crossOverAndMutate(parents: List<IntArray>): List<IntArray> =
+    private fun crossOverAndMutate(parents: List<Path>): List<Path> =
         Stream.concat(
             crossoverService.crossover(parents, CHILDREN_TO_PARENTS_SIZE).map { mutate(it) },
             parents.stream().limit(POPULATION_SIZE - CHILDREN_TO_PARENTS_SIZE)
         ).toList()
 
-    private fun mutate(path: IntArray): IntArray =
+    private fun mutate(path: Path): Path =
         if ((Random.nextFloat() < MUTATION_CHANCE)) {
             val j = Random.nextInt(path.size)
             val i = Random.nextInt(path.size)
@@ -63,18 +65,18 @@ class Resolver(
             path
         }
 
-    private fun createInitialPopulation(points: IntArray): List<IntArray> =
+    private fun createInitialPopulation(points: Path): List<Path> =
         List(POPULATION_SIZE) { points.copyOf().also { it.shuffle() } }
 
     private fun rateSortKill(
-        children: List<IntArray>,
+        children: List<Path>,
     ): List<PathResult> = children.parallelStream()
         .map { PathResult(score(it), it) }
         .sorted { a, b -> a.result.compareTo(b.result) }
         .limit(SURVIVOR_NUMBER)
         .toList()
 
-    private fun score(path: IntArray): Int {
+    private fun score(path: Path): Int {
         var totalCost = 0
         val iterator = path.iterator()
         var from = iterator.next() // Skip the first element
