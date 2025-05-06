@@ -19,9 +19,7 @@ class CostService {
         }
     }
 
-    fun getCost(f: Int, t: Int): Int {
-        return costs[f * size + t]
-    }
+    fun getCost(f: Id, t: Id): Int = costs[f * size + t]
 
     fun getCost(f: Point, t: Point): Int =
         sqrt((t.x - f.x) * (t.x - f.x) + (t.y - f.y) * (t.y - f.y)).roundToInt()

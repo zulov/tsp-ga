@@ -15,16 +15,15 @@ class CrossoverService {
     ): Path {
         val set = BooleanArray(parent1.size) { false }
         val pivot = Random.nextInt(0, parent1.size)
-        val result = Path(parent1.size)
-        System.arraycopy(parent1, 0, result, 0, pivot)
+        val result = parent1.copyOf()
 
         for (i in 0 until pivot) {
-            set[parent1[i]] = true
+            set[parent1[i].toInt()] = true
         }
         var index = pivot
 
         for (id in parent2) {
-            if (!set[id]) {
+            if (!set[id.toInt()]) {
                 result[index++] = id
             }
         }
