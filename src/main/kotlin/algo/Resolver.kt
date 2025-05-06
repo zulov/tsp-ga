@@ -14,6 +14,7 @@ const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toLong()
 const val CHILDREN_TO_PARENTS_SIZE = (POPULATION_SIZE * 0.9).toLong()
 
 typealias Path = IntArray
+typealias Id = Int
 
 class Resolver(
     val pointRepository: PointRepository
