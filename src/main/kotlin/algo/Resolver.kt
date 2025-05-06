@@ -6,8 +6,8 @@ import java.text.DecimalFormat
 import java.util.stream.Stream
 import kotlin.random.Random
 
-const val STEPS_NO = 200
-const val POPULATION_SIZE = 100000
+const val STEPS_NO = 2000
+const val POPULATION_SIZE = 100_000
 const val SURVIVOR_RATE = 0.8
 const val MUTATION_CHANCE = 0.1
 const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toLong()
@@ -34,16 +34,20 @@ class Resolver(
 
             children = crossOverAndMutate(parents)
 
-            if ((i + 1) % 100 == 0) {
-                println(
-                    "Progress: ${decimalFormat.format((i + 1) / (STEPS_NO / 100.0))}%, " +
-                            "best: ${score(parents.first())}, " +
-                            "worst: ${score(parents.last())}"
-                )
-            }
+            logProgress(i, parents)
         }
 
         return PathResult(score(parents.first()), parents.first())
+    }
+
+    private fun logProgress(i: Int, parents: List<Path>) {
+        if ((i + 1) % 100 == 0) {
+            println(
+                "Progress: ${decimalFormat.format((i + 1) / (STEPS_NO / 100.0))}%, " +
+                        "best: ${score(parents.first())}, " +
+                        "worst: ${score(parents.last())}"
+            )
+        }
     }
 
     private fun crossOverAndMutate(parents: List<Path>): List<Path> =
