@@ -6,7 +6,7 @@ import java.text.DecimalFormat
 import java.util.stream.Stream
 import kotlin.random.Random
 
-const val STEPS_NO = 2000
+const val STEPS_NO = 300
 const val POPULATION_SIZE = 100_000
 const val SURVIVOR_RATE = 0.8
 const val MUTATION_CHANCE = 0.1
@@ -85,9 +85,9 @@ class Resolver(
     private fun score(path: Path): Int {
         var totalCost = 0
         var from = path.first()
-        path.forEach {
-            totalCost += costService.getCost(from, it)
-            from = it
+        for (to in path) {
+            totalCost += costService.getCost(from, to)
+            from = to
         }
 
         totalCost += costService.getCost(path.last(), path.first()) // Closing the loop
