@@ -11,7 +11,6 @@ class CostService {
 
     fun init(points: List<Point>) {
         size = points.size
-        val size = points.size
         costs = ShortArray(size * size) { index ->
             val i = index / size
             val j = index % size
