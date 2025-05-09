@@ -3,15 +3,13 @@ package pl.zulov
 import pl.zulov.algo.Resolver
 import pl.zulov.data.PointRepository
 import java.text.DecimalFormat
-import kotlin.collections.component1
-import kotlin.collections.component2
 import kotlin.collections.listOf
 import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(1000)
-val POPULATION_SIZE = listOf(20_000)
+val STEPS_NO = listOf(3000)
+val POPULATION_SIZE = listOf(30_000)
 val SURVIVOR_RATE = listOf(0.4F, 0.5F, 0.6F, 0.7F, 0.8F, 0.9F)
 val MUTATION_CHANCE = listOf(0.02F, 0.05F, 0.1F, 0.2F, 0.3F)
 val GRANDFATHER_RATE = listOf(0.1F, 0.2F, 0.3F)
@@ -55,10 +53,13 @@ fun main() {
 }
 
 fun groupAndPrintResults(results: Map<ResultKey, Int>, name: String, getter: (ResultKey) -> String) {
+    println("By $name:")
     results.entries.map { getter(it.key) to it.value }
         .groupBy { it.first }
-        .forEach { (value, entries) ->
-            println("$name: $value -> ${df.format(entries.map { it.second }.average())}")//sort it
+        .map { it.key to it.value.map { it.second }.average() }
+        .sortedBy { it.second }
+        .forEach { (value, result) ->
+            println("\t$value -> ${df.format(result)}")
         }
 }
 
@@ -70,11 +71,9 @@ data class ResultKey(
     val mutation: Float,
     val grandfather: Float
 ) {
-    override fun toString(): String {
-        return "Steps: $steps; Pop: $population; Survivor: ${df.format(survivor)}; Mutation: ${df.format(mutation)}; Grandfather: ${
-            df.format(
-                grandfather
-            )
-        }"
-    }
+    override fun toString(): String =
+        "Steps: $steps; Pop: $population; " +
+                "Survivor: ${df.format(survivor)}; " +
+                "Mutation: ${df.format(mutation)}; " +
+                "Grandfather: ${df.format(grandfather)}"
 }
