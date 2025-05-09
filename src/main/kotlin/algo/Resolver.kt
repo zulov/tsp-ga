@@ -6,22 +6,23 @@ import java.text.DecimalFormat
 import java.util.stream.Stream
 import kotlin.random.Random
 
-const val STEPS_NO = 300
-const val POPULATION_SIZE = 100_000
-const val SURVIVOR_RATE = 0.8
-const val MUTATION_CHANCE = 0.1
-const val SURVIVOR_NUMBER = (POPULATION_SIZE * SURVIVOR_RATE).toLong()
-const val CHILDREN_TO_PARENTS_SIZE = (POPULATION_SIZE * 0.9).toLong()
-
 typealias Path = ShortArray
 typealias Id = Short
 
 class Resolver(
-    val pointRepository: PointRepository
+    val pointRepository: PointRepository,
+    private val stepsNo: Int,
+    private val populationSize: Int,
+    survivorRate: Float,
+    private val mutationChance: Float,
+    grandfatherRate: Float,
 ) {
     private val crossoverService = CrossoverService()
     private val costService = CostService()
     private val decimalFormat = DecimalFormat("00.0")
+
+    private val survivorNumber = (populationSize * survivorRate).toLong()
+    private val childrenToParentsSize = (populationSize * grandfatherRate).toLong()
 
     fun process(): PathResult {
         val points = pointRepository.getIds()
@@ -29,7 +30,7 @@ class Resolver(
 
         var children = createInitialPopulation(points)
         var parents: List<Path> = emptyList()
-        for (i in 0 until STEPS_NO) {
+        for (i in 0 until stepsNo) {
             parents = rateSortKill(children)
 
             children = crossOverAndMutate(parents)
@@ -43,7 +44,7 @@ class Resolver(
     private fun logProgress(i: Int, parents: List<Path>) {
         if ((i + 1) % 100 == 0) {
             println(
-                "Progress: ${decimalFormat.format((i + 1) / (STEPS_NO / 100.0))}%, " +
+                "Progress: ${decimalFormat.format((i + 1) / (stepsNo / 100.0))}%, " +
                         "best: ${score(parents.first())}, " +
                         "worst: ${score(parents.last())}"
             )
@@ -52,12 +53,12 @@ class Resolver(
 
     private fun crossOverAndMutate(parents: List<Path>): List<Path> =
         Stream.concat(
-            crossoverService.crossover(parents, CHILDREN_TO_PARENTS_SIZE).map { mutate(it) },
-            parents.stream().limit(POPULATION_SIZE - CHILDREN_TO_PARENTS_SIZE)
+            crossoverService.crossover(parents, childrenToParentsSize).map { mutate(it) },
+            parents.stream().limit(populationSize - childrenToParentsSize)
         ).toList()
 
     private fun mutate(path: Path): Path =
-        if ((Random.nextFloat() < MUTATION_CHANCE)) {
+        if ((Random.nextFloat() < mutationChance)) {
             val j = Random.nextInt(path.size)
             val i = Random.nextInt(path.size)
 
@@ -71,14 +72,14 @@ class Resolver(
         }
 
     private fun createInitialPopulation(points: Path): List<Path> =
-        List(POPULATION_SIZE) { points.copyOf().also { it.shuffle() } }
+        List(populationSize) { points.copyOf().also { it.shuffle() } }
 
     private fun rateSortKill(
         children: List<Path>,
     ): List<Path> = children.parallelStream()
         .map { PathResult(score(it), it) }
         .sorted { a, b -> a.result.compareTo(b.result) }
-        .limit(SURVIVOR_NUMBER)
+        .limit(survivorNumber)
         .map { it.path }
         .toList()
 
