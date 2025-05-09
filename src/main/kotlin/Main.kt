@@ -15,9 +15,7 @@ val MUTATION_CHANCE = listOf(0.02F, 0.05F, 0.1F, 0.2F, 0.3F)
 val GRANDFATHER_RATE = listOf(0.1F, 0.2F, 0.3F)
 private val df = DecimalFormat("0.0")
 fun main() {
-    measureTimeMillis {
-        pointRepository.load("xit1083")
-    }.let { println("Time to load file: $it ms") }
+    pointRepository.load("xit1083")
 
     val results: MutableMap<ResultKey, Int> = mutableMapOf()
 
