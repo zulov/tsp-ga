@@ -42,7 +42,7 @@ class Resolver(
     }
 
     private fun logProgress(i: Int, parents: List<Path>) {
-        if ((i + 1) % 100 == 0) {
+        if ((i + 1) % 500 == 0) {
             println(
                 "Progress: ${decimalFormat.format((i + 1) / (stepsNo / 100.0))}%, " +
                         "best: ${score(parents.first())}, " +

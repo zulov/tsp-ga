@@ -8,11 +8,11 @@ import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(3000)
+val STEPS_NO = listOf(20000)
 val POPULATION_SIZE = listOf(30_000)
-val SURVIVOR_RATE = listOf(0.4F, 0.5F, 0.6F, 0.7F, 0.8F, 0.9F)
-val MUTATION_CHANCE = listOf(0.02F, 0.05F, 0.1F, 0.2F, 0.3F)
-val GRANDFATHER_RATE = listOf(0.1F, 0.2F, 0.3F)
+val SURVIVOR_RATE = listOf(0.8F)
+val MUTATION_CHANCE = listOf(0.3F)
+val GRANDFATHER_RATE = listOf(0.9f)
 private val df = DecimalFormat("0.0")
 fun main() {
     pointRepository.load("xit1083")
@@ -29,8 +29,7 @@ fun main() {
                             val (distance, order) = resolver.process()
                             val key = ResultKey(steps, population, survivor, mutation, grandfather)
                             results[key] = distance
-                            println("Distance: $distance")
-                            println(key)
+                            println("$key = $distance")
                         }
                         println("Time process: $processTime ms, and per step: ${processTime / steps} ms")
                     }
