@@ -3,18 +3,20 @@ package pl.zulov
 import pl.zulov.algo.Resolver
 import pl.zulov.data.PointRepository
 import java.text.DecimalFormat
+import java.time.LocalTime
 import kotlin.collections.listOf
 import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(20000)
-val POPULATION_SIZE = listOf(30_000)
+val STEPS_NO = listOf(1000)
+val POPULATION_SIZE = listOf(20_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val GRANDFATHER_RATE = listOf(0.9f)
 private val df = DecimalFormat("0.0")
 fun main() {
+    println(LocalTime.now())
     pointRepository.load("xit1083")
 
     val results: MutableMap<ResultKey, Int> = mutableMapOf()
@@ -46,7 +48,7 @@ fun main() {
     groupAndPrintResults(results, "mutation") { x -> x.mutation.toString() }
     groupAndPrintResults(results, "population") { x -> x.population.toString() }
     groupAndPrintResults(results, "grandfather") { x -> x.grandfather.toString() }
-
+    println(LocalTime.now())
 }
 
 fun groupAndPrintResults(results: Map<ResultKey, Int>, name: String, getter: (ResultKey) -> String) {

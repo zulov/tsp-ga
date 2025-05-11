@@ -6,8 +6,7 @@ import kotlin.random.Random
 class CrossoverService {
 
     fun crossover(parents: List<Path>, populationSize: Long): Stream<Path> =
-        (0 until populationSize).toList().parallelStream()
-            .map { crossover(parents.random(), parents.random()) }
+        (0 until populationSize).toList().parallelStream().map { crossover(parents.random(), parents.random()) }
 
     fun crossover(
         parent1: Path,
@@ -21,7 +20,7 @@ class CrossoverService {
             set[parent1[i].toInt()] = true
         }
         var index = pivot
-
+        //zlikwidowac if
         for (id in parent2) {
             if (!set[id.toInt()]) {
                 result[index++] = id

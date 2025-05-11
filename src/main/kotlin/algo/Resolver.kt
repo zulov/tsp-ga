@@ -42,7 +42,7 @@ class Resolver(
     }
 
     private fun logProgress(i: Int, parents: List<Path>) {
-        if ((i + 1) % 500 == 0) {
+        if ((i + 1) % 100 == 0) {
             println(
                 "Progress: ${decimalFormat.format((i + 1) / (stepsNo / 100.0))}%, " +
                         "best: ${score(parents.first())}, " +
@@ -53,8 +53,8 @@ class Resolver(
 
     private fun crossOverAndMutate(parents: List<Path>): List<Path> =
         Stream.concat(
-            crossoverService.crossover(parents, childrenToParentsSize).map { mutate(it) },
-            parents.stream().limit(populationSize - childrenToParentsSize)
+            parents.stream().limit(populationSize - childrenToParentsSize),//zachować oceny
+            crossoverService.crossover(parents, childrenToParentsSize).map { mutate(it) }
         ).toList()
 
     private fun mutate(path: Path): Path =
