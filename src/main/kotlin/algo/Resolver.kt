@@ -53,8 +53,8 @@ class Resolver(
 
     private fun crossOverAndMutate(parents: List<Path>): List<Path> =
         Stream.concat(
-            crossoverService.crossover(parents, childrenToParentsSize).map { mutate(it) },
-            parents.stream().limit(populationSize - childrenToParentsSize)
+            parents.stream().limit(populationSize - childrenToParentsSize),//zachować oceny
+            crossoverService.crossover(parents, childrenToParentsSize).map { mutate(it) }
         ).toList()
 
     private fun mutate(path: Path): Path =
