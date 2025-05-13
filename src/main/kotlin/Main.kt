@@ -13,7 +13,7 @@ val STEPS_NO = listOf(1000)
 val POPULATION_SIZE = listOf(20_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
-val GRANDFATHER_RATE = listOf(0.9f)
+val GRANDFATHER_RATE = listOf(0.5f)
 private val df = DecimalFormat("0.0")
 fun main() {
     println(LocalTime.now())
@@ -28,9 +28,9 @@ fun main() {
                     GRANDFATHER_RATE.forEach { grandfather ->
                         val processTime = measureTimeMillis {
                             val resolver = Resolver(pointRepository, steps, population, survivor, mutation, grandfather)
-                            val (distance, order) = resolver.process()
+                            val (order, distance) = resolver.process()
                             val key = ResultKey(steps, population, survivor, mutation, grandfather)
-                            results[key] = distance
+                            results[key] = distance!!
                             println("$key = $distance")
                         }
                         println("Time process: $processTime ms, and per step: ${processTime / steps} ms")
@@ -52,14 +52,17 @@ fun main() {
 }
 
 fun groupAndPrintResults(results: Map<ResultKey, Int>, name: String, getter: (ResultKey) -> String) {
-    println("By $name:")
-    results.entries.map { getter(it.key) to it.value }
+    val lines = results.entries.map { getter(it.key) to it.value }
         .groupBy { it.first }
         .map { it.key to it.value.map { it.second }.average() }
         .sortedBy { it.second }
-        .forEach { (value, result) ->
-            println("\t$value -> ${df.format(result)}")
+        .map { (value, result) ->
+            "\t$value -> ${df.format(result)}"
         }
+    if(lines.size>1){
+        println("By $name:")
+        lines.forEach { println(it) }
+    }
 }
 
 

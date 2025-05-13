@@ -25,11 +25,12 @@ class Resolver(
     private val childrenToParentsSize = (populationSize * grandfatherRate).toLong()
 
     fun process(): PathResult {
+        crossoverService.init(populationSize, pointRepository.getPoints().size)
         val points = pointRepository.getIds()
         costService.init(pointRepository.getPoints())
 
         var children = createInitialPopulation(points)
-        var parents: List<Path> = emptyList()
+        var parents: List<PathResult> = emptyList()
         for (i in 0 until stepsNo) {
             parents = rateSortKill(children)
 
@@ -38,23 +39,23 @@ class Resolver(
             logProgress(i, parents)
         }
 
-        return PathResult(score(parents.first()), parents.first())
+        return parents.first()
     }
 
-    private fun logProgress(i: Int, parents: List<Path>) {
+    private fun logProgress(i: Int, parents: List<PathResult>) {
         if ((i + 1) % 100 == 0) {
             println(
                 "Progress: ${decimalFormat.format((i + 1) / (stepsNo / 100.0))}%, " +
-                        "best: ${score(parents.first())}, " +
-                        "worst: ${score(parents.last())}"
+                        "best: ${parents.first().result}, " +
+                        "worst: ${parents.last().result}"
             )
         }
     }
 
-    private fun crossOverAndMutate(parents: List<Path>): List<Path> =
+    private fun crossOverAndMutate(parents: List<PathResult>): List<PathResult> =
         Stream.concat(
-            parents.stream().limit(populationSize - childrenToParentsSize),//zachować oceny
-            crossoverService.crossover(parents, childrenToParentsSize).map { mutate(it) }
+            parents.stream().limit(populationSize - childrenToParentsSize),
+            crossoverService.crossover(parents, childrenToParentsSize).map { mutate(it) }.map { PathResult(it, null) }
         ).toList()
 
     private fun mutate(path: Path): Path =
@@ -71,16 +72,20 @@ class Resolver(
             path
         }
 
-    private fun createInitialPopulation(points: Path): List<Path> =
-        List(populationSize) { points.copyOf().also { it.shuffle() } }
+    private fun createInitialPopulation(points: Path): List<PathResult> =
+        List(populationSize) { PathResult(points.copyOf().also { it.shuffle() }, null) }
 
     private fun rateSortKill(
-        children: List<Path>,
-    ): List<Path> = children.parallelStream()
-        .map { PathResult(score(it), it) }
-        .sorted { a, b -> a.result.compareTo(b.result) }
+        children: List<PathResult>,
+    ): List<PathResult> = children.parallelStream()
+        .map {
+            if (it.result == null) {
+                it.result = score(it.path)
+            }
+            it
+        }
+        .sorted { a, b -> a.result!!.compareTo(b.result!!) }
         .limit(survivorNumber)
-        .map { it.path }
         .toList()
 
     private fun score(path: Path): Int {
