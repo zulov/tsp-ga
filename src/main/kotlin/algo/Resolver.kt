@@ -44,10 +44,12 @@ class Resolver(
 
     private fun logProgress(i: Int, parents: List<PathResult>) {
         if ((i + 1) % 100 == 0) {
+            val f = parents.first().result
+            val l = parents.last().result
             println(
                 "Progress: ${decimalFormat.format((i + 1) / (stepsNo / 100.0))}%, " +
-                        "best: ${parents.first().result}, " +
-                        "worst: ${parents.last().result}"
+                        "best: ${f}, " +
+                        "range: ${decimalFormat.format(l / f.toFloat() * 100)}% "
             )
         }
     }

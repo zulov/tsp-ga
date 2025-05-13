@@ -9,8 +9,8 @@ import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(10_000)
-val POPULATION_SIZE = listOf(100_000)
+val STEPS_NO = listOf(1_000)
+val POPULATION_SIZE = listOf(10_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val GRANDFATHER_RATE = listOf(0.5f)
@@ -21,24 +21,17 @@ fun main() {
 
     val results: MutableMap<ResultKey, Int> = mutableMapOf()
 
-    STEPS_NO.forEach { steps ->
-        POPULATION_SIZE.forEach { population ->
-            SURVIVOR_RATE.forEach { survivor ->
-                MUTATION_CHANCE.forEach { mutation ->
-                    GRANDFATHER_RATE.forEach { grandfather ->
-                        val processTime = measureTimeMillis {
-                            val resolver = Resolver(pointRepository, steps, population, survivor, mutation, grandfather)
-                            val (order, distance) = resolver.process()
-                            val key = ResultKey(steps, population, survivor, mutation, grandfather)
-                            results[key] = distance
-                            println("$key = $distance")
-                        }
-                        println("Time process: $processTime ms, and per step: ${processTime / steps} ms")
-                    }
-                }
+    prepareParameters()
+        .forEach { p ->
+            val processTime = measureTimeMillis {
+                val resolver = Resolver(pointRepository, p.steps, p.population, p.survivor, p.mutation, p.grandfather)
+                val (_, distance) = resolver.process()
+                results[p] = distance
+                println("$p = $distance")
             }
+            println("Time process: $processTime ms, and per step: ${processTime / p.steps} ms")
         }
-    }
+
     println("Results:")
     results.entries.sortedBy { it.value }.forEach {
         println("${it.key} -> ${it.value}")
@@ -49,6 +42,18 @@ fun main() {
     groupAndPrintResults(results, "population") { x -> x.population.toString() }
     groupAndPrintResults(results, "grandfather") { x -> x.grandfather.toString() }
     println(LocalTime.now())
+}
+
+private fun prepareParameters(): List<ResultKey> = STEPS_NO.flatMap { steps ->
+    POPULATION_SIZE.flatMap { population ->
+        SURVIVOR_RATE.flatMap { survivor ->
+            MUTATION_CHANCE.flatMap { mutation ->
+                GRANDFATHER_RATE.map { grandfather ->
+                    ResultKey(steps, population, survivor, mutation, grandfather)
+                }
+            }
+        }
+    }
 }
 
 fun groupAndPrintResults(results: Map<ResultKey, Int>, name: String, getter: (ResultKey) -> String) {
