@@ -9,8 +9,8 @@ import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(1000)
-val POPULATION_SIZE = listOf(20_000)
+val STEPS_NO = listOf(10_000)
+val POPULATION_SIZE = listOf(100_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val GRANDFATHER_RATE = listOf(0.5f)
@@ -30,7 +30,7 @@ fun main() {
                             val resolver = Resolver(pointRepository, steps, population, survivor, mutation, grandfather)
                             val (order, distance) = resolver.process()
                             val key = ResultKey(steps, population, survivor, mutation, grandfather)
-                            results[key] = distance!!
+                            results[key] = distance
                             println("$key = $distance")
                         }
                         println("Time process: $processTime ms, and per step: ${processTime / steps} ms")
@@ -59,7 +59,7 @@ fun groupAndPrintResults(results: Map<ResultKey, Int>, name: String, getter: (Re
         .map { (value, result) ->
             "\t$value -> ${df.format(result)}"
         }
-    if(lines.size>1){
+    if (lines.size > 1) {
         println("By $name:")
         lines.forEach { println(it) }
     }

@@ -32,9 +32,9 @@ class Resolver(
         var children = createInitialPopulation(points)
         var parents: List<PathResult> = emptyList()
         for (i in 0 until stepsNo) {
-            parents = rateSortKill(children)
+            parents = sortKill(children)
 
-            children = crossOverAndMutate(parents)
+            children = crossOverAndMutateAndScore(parents)
 
             logProgress(i, parents)
         }
@@ -52,10 +52,12 @@ class Resolver(
         }
     }
 
-    private fun crossOverAndMutate(parents: List<PathResult>): List<PathResult> =
+    private fun crossOverAndMutateAndScore(parents: List<PathResult>): List<PathResult> =
         Stream.concat(
             parents.stream().limit(populationSize - childrenToParentsSize),
-            crossoverService.crossover(parents, childrenToParentsSize).map { mutate(it) }.map { PathResult(it, null) }
+            crossoverService.crossover(parents, childrenToParentsSize)
+                .map { mutate(it) }
+                .map { PathResult(it, score(it)) }
         ).toList()
 
     private fun mutate(path: Path): Path =
@@ -73,18 +75,16 @@ class Resolver(
         }
 
     private fun createInitialPopulation(points: Path): List<PathResult> =
-        List(populationSize) { PathResult(points.copyOf().also { it.shuffle() }, null) }
-
-    private fun rateSortKill(
-        children: List<PathResult>,
-    ): List<PathResult> = children.parallelStream()
-        .map {
-            if (it.result == null) {
-                it.result = score(it.path)
-            }
-            it
+        List(populationSize) {
+            val path = points.copyOf().also { it.shuffle() }
+            PathResult(path, score(path))
         }
-        .sorted { a, b -> a.result!!.compareTo(b.result!!) }
+
+    private fun sortKill(
+        children: List<PathResult>,
+    ): List<PathResult> = children
+        .parallelStream()
+        .sorted { a, b -> a.result.compareTo(b.result) }
         .limit(survivorNumber)
         .toList()
 
@@ -96,7 +96,7 @@ class Resolver(
             from = to
         }
 
-        totalCost += costService.getCost(path.last(), path.first()) // Closing the loop
+        totalCost += costService.getCost(path.last(), path.first())
         return totalCost
     }
 

@@ -13,7 +13,7 @@ class CrossoverService {
 
     fun crossover(parents: List<PathResult>, populationSize: Long): Stream<Path> =
         (0 until populationSize).toList().parallelStream()
-            .map { crossover(it,parents.random().path, parents.random().path) }
+            .map { crossover(it, parents.random().path, parents.random().path) }
 
     fun crossover(
         i: Long,
@@ -33,8 +33,9 @@ class CrossoverService {
         for (id in parent2) {
             result[index] = id
 
-            index+=set[id.toInt()]
+            index += set[id.toInt()]
         }
+        result[pivot] = parent1[pivot]
 
         return result
     }
