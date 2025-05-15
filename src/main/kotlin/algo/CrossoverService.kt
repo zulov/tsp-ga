@@ -20,23 +20,25 @@ class CrossoverService {
         parent1: Path,
         parent2: Path,
     ): Path {
-        val set = arrayOfByteArrays[i.toInt()]
-        set.fill(1)
+        val usedInParent1 = arrayOfByteArrays[i.toInt()]
+        usedInParent1.fill(1)
         val pivot = Random.nextInt(0, parent1.size)
         val result = parent1.copyOf()
 
         for (i in pivot until parent1.size) {
-            set[parent1[i].toInt()] = 0
+            usedInParent1[parent1[i].toInt()] = 0
         }
         var index = 0
 
         for (id in parent2) {
             result[index] = id
 
-            index += set[id.toInt()]
+            index += usedInParent1[id.toInt()]
         }
         result[pivot] = parent1[pivot]
-
+        if (result.distinct().size != result.size) {
+            throw IllegalStateException("Duplicate values in result: $result,pivot:$pivot")
+        }
         return result
     }
 
