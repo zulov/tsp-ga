@@ -10,7 +10,7 @@ import kotlin.system.measureTimeMillis
 val pointRepository = PointRepository()
 
 val STEPS_NO = listOf(10_000)
-val POPULATION_SIZE = listOf(10_000)
+val POPULATION_SIZE = listOf(1_000_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val GRANDFATHER_RATE = listOf(0.9f)
