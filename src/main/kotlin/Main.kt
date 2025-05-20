@@ -9,12 +9,14 @@ import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(300)
-val POPULATION_SIZE = listOf(200_000)
+val STEPS_NO = listOf(1000)
+val POPULATION_SIZE = listOf(50_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val GRANDFATHER_RATE = listOf(0.9f)
+val NN_RATE = listOf(0.0f, 0.01f, 0.05f, 0.1f, 0.2f)
 private val df = DecimalFormat("0.0")
+private val df2 = DecimalFormat("0.00")
 fun main() {
     println(LocalTime.now())
     pointRepository.load("xit1083")
@@ -24,7 +26,7 @@ fun main() {
     prepareParameters()
         .forEach { p ->
             val processTime = measureTimeMillis {
-                val resolver = Resolver(pointRepository, p.steps, p.population, p.survivor, p.mutation, p.grandfather)
+                val resolver = Resolver(pointRepository, p.steps, p.population, p.survivor, p.mutation, p.grandfather, p.initNnRate)
                 val (_, distance) = resolver.process()
                 results[p] = distance
                 println("$p = $distance")
@@ -41,6 +43,7 @@ fun main() {
     groupAndPrintResults(results, "mutation") { x -> x.mutation.toString() }
     groupAndPrintResults(results, "population") { x -> x.population.toString() }
     groupAndPrintResults(results, "grandfather") { x -> x.grandfather.toString() }
+    groupAndPrintResults(results, "initNnRate") { x -> x.initNnRate.toString() }
     println(LocalTime.now())
 }
 
@@ -48,8 +51,10 @@ private fun prepareParameters(): List<ResultKey> = STEPS_NO.flatMap { steps ->
     POPULATION_SIZE.flatMap { population ->
         SURVIVOR_RATE.flatMap { survivor ->
             MUTATION_CHANCE.flatMap { mutation ->
-                GRANDFATHER_RATE.map { grandfather ->
-                    ResultKey(steps, population, survivor, mutation, grandfather)
+                GRANDFATHER_RATE.flatMap { grandfather ->
+                    NN_RATE.map { initNnRate ->
+                        ResultKey(steps, population, survivor, mutation, grandfather, initNnRate)
+                    }
                 }
             }
         }
@@ -76,11 +81,13 @@ data class ResultKey(
     val population: Int,
     val survivor: Float,
     val mutation: Float,
-    val grandfather: Float
+    val grandfather: Float,
+    val initNnRate: Float,
 ) {
     override fun toString(): String =
         "Steps: $steps; Pop: $population; " +
                 "Survivor: ${df.format(survivor)}; " +
                 "Mutation: ${df.format(mutation)}; " +
-                "Grandfather: ${df.format(grandfather)}"
+                "Grandfather: ${df.format(grandfather)}; " +
+                "NN rate: ${df2.format(initNnRate)}"
 }

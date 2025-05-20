@@ -17,20 +17,25 @@ class Resolver(
     survivorRate: Float,
     private val mutationChance: Float,
     grandfatherRate: Float,
+    initNnRate: Float,
 ) {
     private val crossoverService = CrossoverService()
     private val costService = CostService()
+    private val initialPopulationCreator = InitialPopulationCreator(costService)
+
     private val decimalFormat = DecimalFormat("00.0")
 
     private val survivorNumber = (populationSize * survivorRate).toLong()
     private val childrenToParentsSize = (populationSize * grandfatherRate).toLong()
+    private val initNNRateSize = (populationSize * initNnRate).toInt()
+    private val initRandomRateSize = populationSize - initNNRateSize
 
     fun process(): PathResult {
         crossoverService.init(populationSize, pointRepository.getPoints().size)
         val points = pointRepository.getIds()
         costService.init(pointRepository.getPoints())
 
-        var children = createInitialPopulation(points)
+        var children = createChildren(points)
         var parents: List<PathResult> = emptyList()
         for (i in 0 until stepsNo) {
             val stepTime = measureTimeMillis{
@@ -45,12 +50,19 @@ class Resolver(
         return parents.first()
     }
 
+    private fun createChildren(points: Path): List<PathResult> =
+        initialPopulationCreator.create(points, initNNRateSize, initRandomRateSize).map {
+            PathResult(it, score(it))
+        }
+
     private fun logProgress(i: Int, parents: List<PathResult>, stepTime: Long) {
         if ((i + 1) % 100 == 0) {
             val f = parents.first().result
             val l = parents.last().result
+            val percent = if (i + 1== stepsNo)  " Done" else decimalFormat.format((i + 1) / (stepsNo / 100.0)) +"%"
+
             println(
-                "Progress: ${decimalFormat.format((i + 1) / (stepsNo / 100.0))}%, " +
+                "Progress: $percent, " +
                         "best: $f, " +
                         "range: ${decimalFormat.format(l / f.toFloat() * 100)}% " +
                         "time: ${stepTime}ms"
@@ -78,12 +90,6 @@ class Resolver(
             path
         } else {
             path
-        }
-
-    private fun createInitialPopulation(points: Path): List<PathResult> =
-        List(populationSize) {
-            val path = points.copyOf().also { it.shuffle() }
-            PathResult(path, score(path))
         }
 
     private fun sortKill(
