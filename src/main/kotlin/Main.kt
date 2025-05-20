@@ -9,12 +9,12 @@ import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(2000)
+val STEPS_NO = listOf(10000)
 val POPULATION_SIZE = listOf(100_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val GRANDFATHER_RATE = listOf(0.9f)
-val NN_RATE = listOf(0.0f, 0.01f, 0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.3f)
+val NN_RATE = listOf(0.1f)
 private val df = DecimalFormat("0.0")
 private val df2 = DecimalFormat("0.00")
 fun main() {

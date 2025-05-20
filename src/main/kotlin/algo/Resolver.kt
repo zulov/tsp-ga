@@ -67,7 +67,7 @@ class Resolver(
                 "Progress: $percent, " +
                         "best: $f, " +
                         "range: ${decimalFormat.format(l / f.toFloat() * 100)}% " +
-                        "time: ${accumTimeStep / 1000}s"
+                        "time: ${decimalFormat.format(accumTimeStep / 1000.0)}s"
             )
             accumTimeStep = 0L
         }
