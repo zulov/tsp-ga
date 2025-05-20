@@ -61,7 +61,7 @@ class Resolver(
         if ((i + 1) % 100 == 0) {
             val f = parents.first().result
             val l = parents.last().result
-            val percent = if (i + 1 == stepsNo) " Done" else decimalFormat.format((i + 1) / (stepsNo / 100.0)) + "%"
+            val percent = if (i + 1 == stepsNo) "DONE!" else decimalFormat.format((i + 1) / (stepsNo / 100.0)) + "%"
 
             println(
                 "Progress: $percent, " +
