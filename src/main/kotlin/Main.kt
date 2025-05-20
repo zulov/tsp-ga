@@ -9,8 +9,8 @@ import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(10_000)
-val POPULATION_SIZE = listOf(1_000_000)
+val STEPS_NO = listOf(300)
+val POPULATION_SIZE = listOf(200_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val GRANDFATHER_RATE = listOf(0.9f)
@@ -29,7 +29,7 @@ fun main() {
                 results[p] = distance
                 println("$p = $distance")
             }
-            println("Time process: $processTime ms, and per step: ${processTime / p.steps} ms")
+            println("Time process: ${processTime / 1000}s, per step: ${processTime / p.steps} ms")
         }
 
     println("Results:")

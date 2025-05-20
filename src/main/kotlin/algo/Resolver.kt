@@ -5,6 +5,7 @@ import pl.zulov.data.PointRepository
 import java.text.DecimalFormat
 import java.util.stream.Stream
 import kotlin.random.Random
+import kotlin.system.measureTimeMillis
 
 typealias Path = ShortArray
 typealias Id = Short
@@ -32,24 +33,27 @@ class Resolver(
         var children = createInitialPopulation(points)
         var parents: List<PathResult> = emptyList()
         for (i in 0 until stepsNo) {
-            parents = sortKill(children)
+            val stepTime = measureTimeMillis{
+                parents = sortKill(children)
 
-            children = crossOverAndMutateAndScore(parents)
+                children = crossOverAndMutateAndScore(parents)
+            }
 
-            logProgress(i, parents)
+            logProgress(i, parents, stepTime)
         }
 
         return parents.first()
     }
 
-    private fun logProgress(i: Int, parents: List<PathResult>) {
+    private fun logProgress(i: Int, parents: List<PathResult>, stepTime: Long) {
         if ((i + 1) % 100 == 0) {
             val f = parents.first().result
             val l = parents.last().result
             println(
                 "Progress: ${decimalFormat.format((i + 1) / (stepsNo / 100.0))}%, " +
-                        "best: ${f}, " +
-                        "range: ${decimalFormat.format(l / f.toFloat() * 100)}% "
+                        "best: $f, " +
+                        "range: ${decimalFormat.format(l / f.toFloat() * 100)}% " +
+                        "time: ${stepTime}ms"
             )
         }
     }
