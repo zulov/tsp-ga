@@ -29,6 +29,7 @@ class Resolver(
     private val childrenToParentsSize = (populationSize * grandfatherRate).toLong()
     private val initNNRateSize = (populationSize * initNnRate).toInt()
     private val initRandomRateSize = populationSize - initNNRateSize
+    private var accumTimeStep = 0L
 
     fun process(): PathResult {
         crossoverService.init(populationSize, pointRepository.getPoints().size)
@@ -38,7 +39,7 @@ class Resolver(
         var children = createChildren(points)
         var parents: List<PathResult> = emptyList()
         for (i in 0 until stepsNo) {
-            val stepTime = measureTimeMillis{
+            val stepTime = measureTimeMillis {
                 parents = sortKill(children)
 
                 children = crossOverAndMutateAndScore(parents)
@@ -56,17 +57,19 @@ class Resolver(
         }
 
     private fun logProgress(i: Int, parents: List<PathResult>, stepTime: Long) {
+        accumTimeStep += stepTime
         if ((i + 1) % 100 == 0) {
             val f = parents.first().result
             val l = parents.last().result
-            val percent = if (i + 1== stepsNo)  " Done" else decimalFormat.format((i + 1) / (stepsNo / 100.0)) +"%"
+            val percent = if (i + 1 == stepsNo) " Done" else decimalFormat.format((i + 1) / (stepsNo / 100.0)) + "%"
 
             println(
                 "Progress: $percent, " +
                         "best: $f, " +
                         "range: ${decimalFormat.format(l / f.toFloat() * 100)}% " +
-                        "time: ${stepTime}ms"
+                        "time: ${accumTimeStep / 1000}s"
             )
+            accumTimeStep = 0L
         }
     }
 
