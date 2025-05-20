@@ -65,7 +65,7 @@ class Resolver(
 
             println(
                 "Progress: $percent, " +
-                        "best: $f, " +
+                        "best: ${green}$f${reset}, " +
                         "range: ${decimalFormat.format(l / f.toFloat() * 100)}% " +
                         "time: ${decimalFormat.format(accumTimeStep / 1000.0)}s"
             )
@@ -77,23 +77,20 @@ class Resolver(
         Stream.concat(
             parents.stream().limit(populationSize - childrenToParentsSize),
             crossoverService.crossover(parents, childrenToParentsSize)
-                .map { mutate(it) }
-                .map { PathResult(it, score(it)) }
+                .peek { mutate(it) }
+                .map { PathResult(it, score(it) ) }
         ).toList()
 
-    private fun mutate(path: Path): Path =
+    private fun mutate(path: Path) {
         if ((Random.nextFloat() < mutationChance)) {
-            val j = Random.nextInt(path.size)
             val i = Random.nextInt(path.size)
+            val j = Random.nextInt(path.size)
 
-            val a = path[i]
-            val b = path[j]
-            path[i] = b
-            path[j] = a
-            path
-        } else {
-            path
+            val t = path[i]
+            path[i] = path[j]
+            path[j] = t
         }
+    }
 
     private fun sortKill(
         children: List<PathResult>,
