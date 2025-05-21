@@ -19,8 +19,9 @@ class InitialPopulationCreator(
             var nearestIdx = -1
             var minDist = Short.MAX_VALUE
             for (j in 0 until n) {
+                val currentPoint = points[currentIdx]
                 if (!visited[j]) {
-                    val dist = costService.getCost(points[currentIdx], points[j])
+                    val dist = costService.getCost(currentPoint, points[j])
                     if (dist < minDist) {
                         minDist = dist
                         nearestIdx = j

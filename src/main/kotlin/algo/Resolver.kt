@@ -1,8 +1,8 @@
 package pl.zulov.algo
 
+import pl.zulov.ResultKey
 import pl.zulov.data.PathResult
 import pl.zulov.data.PointRepository
-import java.text.DecimalFormat
 import java.util.stream.Stream
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
@@ -12,24 +12,31 @@ typealias Id = Short
 
 class Resolver(
     val pointRepository: PointRepository,
-    private val stepsNo: Int,
-    private val populationSize: Int,
-    survivorRate: Float,
-    private val mutationChance: Float,
-    grandfatherRate: Float,
-    initNnRate: Float,
 ) {
     private val crossoverService = CrossoverService()
     private val costService = CostService()
     private val initialPopulationCreator = InitialPopulationCreator(costService)
 
-    private val decimalFormat = DecimalFormat("00.0")
+    private var stepsNo = 0
+    private var populationSize = 0
+    private var mutationChance = 0.0f
+    private var survivorNumber = 0L
+    private var childrenToParentsSize = 0L
+    private var initNNRateSize = 0
+    private var initRandomRateSize = 0
 
-    private val survivorNumber = (populationSize * survivorRate).toLong()
-    private val childrenToParentsSize = (populationSize * grandfatherRate).toLong()
-    private val initNNRateSize = (populationSize * initNnRate).toInt()
-    private val initRandomRateSize = populationSize - initNNRateSize
     private var accumTimeStep = 0L
+
+    fun init(key: ResultKey): Resolver {
+        this.stepsNo = key.steps
+        this.populationSize = key.population
+        this.mutationChance = key.mutation
+        this.survivorNumber = (populationSize * key.survivor).toLong()
+        this.childrenToParentsSize = (populationSize * key.grandfather).toLong()
+        this.initNNRateSize = (populationSize * key.initNnRate).toInt()
+        this.initRandomRateSize = populationSize - initNNRateSize
+        return this
+    }
 
     fun process(): PathResult {
         crossoverService.init(populationSize, pointRepository.getPoints().size)
@@ -61,13 +68,13 @@ class Resolver(
         if ((i + 1) % 100 == 0) {
             val f = parents.first().result
             val l = parents.last().result
-            val percent = if (i + 1 == stepsNo) "DONE!" else decimalFormat.format((i + 1) / (stepsNo / 100.0)) + "%"
+            val percent = if (i + 1 == stepsNo) "DONE!" else dfP.format((i + 1) / (stepsNo / 100.0)) + "%"
 
             println(
                 "Progress: $percent, " +
                         "best: ${green}$f${reset}, " +
-                        "range: ${decimalFormat.format(l / f.toFloat() * 100)}% " +
-                        "time: ${decimalFormat.format(accumTimeStep / 1000.0)}s"
+                        "range: ${df.format(l / f.toFloat() * 100)}% " +
+                        "time: ${df.format(accumTimeStep / 1000.0)}s"
             )
             accumTimeStep = 0L
         }
@@ -78,7 +85,7 @@ class Resolver(
             parents.stream().limit(populationSize - childrenToParentsSize),
             crossoverService.crossover(parents, childrenToParentsSize)
                 .peek { mutate(it) }
-                .map { PathResult(it, score(it) ) }
+                .map { PathResult(it, score(it)) }
         ).toList()
 
     private fun mutate(path: Path) {
