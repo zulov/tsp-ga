@@ -13,15 +13,17 @@ typealias Id = Short
 class Resolver(
     val pointRepository: PointRepository,
 ) {
-    private val crossoverService = CrossoverService()
     private val costService = CostService()
+    private val arrayProvider = ArrayProvider()
     private val initialPopulationCreator = InitialPopulationCreator(costService)
+    private val crossoverService = CrossoverService(arrayProvider)
 
     private var stepsNo = 0
     private var populationSize = 0
     private var mutationChance = 0.0f
-    private var survivorNumber = 0L
-    private var childrenToParentsSize = 0L
+    private var survivorNumber = 0
+    private var grandfathersSize = 0L
+    private var childrenSize = 0
     private var initNNRateSize = 0
     private var initRandomRateSize = 0
 
@@ -31,15 +33,16 @@ class Resolver(
         this.stepsNo = key.steps
         this.populationSize = key.population
         this.mutationChance = key.mutation
-        this.survivorNumber = (populationSize * key.survivor).toLong()
-        this.childrenToParentsSize = (populationSize * key.grandfather).toLong()
+        this.survivorNumber = (populationSize * key.survivor).toInt()
+        this.grandfathersSize = (populationSize * key.grandfather).toLong()
         this.initNNRateSize = (populationSize * key.initNnRate).toInt()
         this.initRandomRateSize = populationSize - initNNRateSize
+        this.childrenSize = (populationSize - grandfathersSize).toInt()
         return this
     }
 
     fun process(): PathResult {
-        crossoverService.init(populationSize, pointRepository.getPoints().size)
+        crossoverService.init(pointRepository.getPoints().size, childrenSize)
         val points = pointRepository.getIds()
         costService.init(pointRepository.getPoints())
 
@@ -47,7 +50,7 @@ class Resolver(
         var parents: List<PathResult> = emptyList()
         for (i in 0 until stepsNo) {
             val stepTime = measureTimeMillis {
-                parents = sortKill(children)
+                parents = sortAndKill(children)
 
                 children = crossOverAndMutateAndScore(parents)
             }
@@ -80,10 +83,9 @@ class Resolver(
         }
     }
 
-    private fun crossOverAndMutateAndScore(parents: List<PathResult>): List<PathResult> =
-        Stream.concat(
-            parents.stream().limit(populationSize - childrenToParentsSize),
-            crossoverService.crossover(parents, childrenToParentsSize)
+    private fun crossOverAndMutateAndScore(parents: List<PathResult>): List<PathResult> = Stream.concat(
+            parents.stream().limit(grandfathersSize),
+            crossoverService.crossover(parents)
                 .peek { mutate(it) }
                 .map { PathResult(it, score(it)) }
         ).toList()
@@ -99,13 +101,16 @@ class Resolver(
         }
     }
 
-    private fun sortKill(
+    private fun sortAndKill(
         children: List<PathResult>,
-    ): List<PathResult> = children
-        .parallelStream()
-        .sorted { a, b -> a.result.compareTo(b.result) }
-        .limit(survivorNumber)
-        .toList()
+    ): List<PathResult> {
+        val toList = children
+            .parallelStream()
+            .sorted { a, b -> a.result.compareTo(b.result) }
+            .toList()
+        arrayProvider.toReuse(toList.stream().skip(grandfathersSize).map { it.path })
+        return toList.take(survivorNumber)
+    }
 
     private fun score(path: Path): Int {
         var totalCost = 0

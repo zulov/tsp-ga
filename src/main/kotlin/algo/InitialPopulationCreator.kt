@@ -8,6 +8,12 @@ class InitialPopulationCreator(
     private var n: Int = 0
     private lateinit var visited: BooleanArray
 
+    fun create(points: Path, initNNRateSize: Int, initRandomRateSize: Int): List<Path> {
+        visited = BooleanArray(points.size)
+        n = points.size
+        return List(initNNRateSize) { generateNNPath(points) } + List(initRandomRateSize) { points.copyOf().also { it.shuffle() } }
+    }
+
     private fun generateNNPath(points: Path): Path {
         visited.fill(false)
         val path = ShortArray(n)
@@ -33,12 +39,6 @@ class InitialPopulationCreator(
             visited[currentIdx] = true
         }
         return path
-    }
-
-    fun create(points: Path, initNNRateSize: Int, initRandomRateSize: Int): List<Path> {
-        visited = BooleanArray(points.size)
-        n = points.size
-        return List(initNNRateSize) { generateNNPath(points) } + List(initRandomRateSize) { points.copyOf().also { it.shuffle() } }
     }
 
 

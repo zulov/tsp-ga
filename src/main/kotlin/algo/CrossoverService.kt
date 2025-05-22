@@ -4,26 +4,30 @@ import pl.zulov.data.PathResult
 import java.util.stream.Stream
 import kotlin.random.Random
 
-class CrossoverService {
+class CrossoverService(
+    private val arrayProvider: ArrayProvider,
+) {
     private lateinit var arrayOfByteArrays: Array<ByteArray>
+    private lateinit var iRange: List<Int>
 
-    fun init(populationSize: Int, pathSize: Int) {
-        arrayOfByteArrays = Array(populationSize) { ByteArray(pathSize) }
+    fun init(pathSize: Int, childrenSize: Int) {
+        arrayOfByteArrays = Array(childrenSize) { ByteArray(pathSize) }
+        iRange = (0 until childrenSize).toList()
     }
 
-    fun crossover(parents: List<PathResult>, populationSize: Long): Stream<Path> =
-        (0 until populationSize).toList().parallelStream()
+    fun crossover(parents: List<PathResult>): Stream<Path> =
+        iRange.parallelStream()
             .map { crossover(it, parents.random().path, parents.random().path) }
 
     fun crossover(
-        i: Long,
+        i: Int,
         parent1: Path,
         parent2: Path,
     ): Path {
-        val notFromParent1 = arrayOfByteArrays[i.toInt()]
+        val notFromParent1 = arrayOfByteArrays[i]
         notFromParent1.fill(1)
         val pivot = Random.nextInt(0, parent1.size)
-        val result = parent1.copyOf()
+        val result = arrayProvider.getAndFill(i,parent1)
 
         for (i in pivot until parent1.size) {
             notFromParent1[parent1[i].toInt()] = 0

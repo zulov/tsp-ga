@@ -15,7 +15,7 @@ val STEPS_NO = listOf(1000)
 val POPULATION_SIZE = listOf(100_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
-val GRANDFATHER_RATE = listOf(0.9f)
+val GRANDFATHER_RATE = listOf(0.1f)
 val NN_RATE = listOf(0.1f)
 fun main() {
     printTime("Start: ")
