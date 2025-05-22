@@ -38,15 +38,15 @@ class Resolver(
         this.initNNRateSize = (populationSize * key.initNnRate).toInt()
         this.initRandomRateSize = populationSize - initNNRateSize
         this.childrenSize = (populationSize - grandfathersSize).toInt()
+        val points = pointRepository.getPoints()
+        crossoverService.init(points.size, childrenSize)
+        costService.init(points)
+
         return this
     }
 
     fun process(): PathResult {
-        crossoverService.init(pointRepository.getPoints().size, childrenSize)
-        val points = pointRepository.getIds()
-        costService.init(pointRepository.getPoints())
-
-        var children = createChildren(points)
+        var children = createChildren()
         var parents: List<PathResult> = emptyList()
         for (i in 0 until stepsNo) {
             val stepTime = measureTimeMillis {
@@ -55,28 +55,28 @@ class Resolver(
                 children = crossOverAndMutateAndScore(parents)
             }
 
-            logProgress(i, parents, stepTime)
+            logProgress(i + 1, parents, stepTime)
         }
 
         return parents.first()
     }
 
-    private fun createChildren(points: Path): List<PathResult> =
-        initialPopulationCreator.create(points, initNNRateSize, initRandomRateSize).map {
+    private fun createChildren(): List<PathResult> =
+        initialPopulationCreator.create(pointRepository.getIds(), initNNRateSize, initRandomRateSize).map {
             PathResult(it, score(it))
         }
 
     private fun logProgress(i: Int, parents: List<PathResult>, stepTime: Long) {
         accumTimeStep += stepTime
-        if ((i + 1) % 100 == 0) {
+        if (i % 100 == 0) {
             val f = parents.first().result
-            val l = parents.last().result
-            val percent = if (i + 1 == stepsNo) "DONE!" else dfP.format((i + 1) / (stepsNo / 100.0)) + "%"
+            val l = parents.last().result.toFloat()
+            val percent = if (i + 1 == stepsNo) "DONE!" else dfP.format(i / (stepsNo / 100.0)) + "%"
 
             println(
                 "Progress: $percent, " +
-                        "best: ${green}$f${reset}, " +
-                        "range: ${df.format(l / f.toFloat() * 100)}% " +
+                        "best:$green $f$reset, " +
+                        "range: ${df.format(l / f * 100.0F)}% " +
                         "time: ${df.format(accumTimeStep / 1000.0)}s"
             )
             accumTimeStep = 0L
@@ -84,11 +84,11 @@ class Resolver(
     }
 
     private fun crossOverAndMutateAndScore(parents: List<PathResult>): List<PathResult> = Stream.concat(
-            parents.stream().limit(grandfathersSize),
-            crossoverService.crossover(parents)
-                .peek { mutate(it) }
-                .map { PathResult(it, score(it)) }
-        ).toList()
+        parents.stream().limit(grandfathersSize),
+        crossoverService.crossover(parents)
+            .peek { mutate(it) }
+            .map { PathResult(it, score(it)) }
+    ).toList()
 
     private fun mutate(path: Path) {
         if ((Random.nextFloat() < mutationChance)) {
@@ -104,12 +104,12 @@ class Resolver(
     private fun sortAndKill(
         children: List<PathResult>,
     ): List<PathResult> {
-        val toList = children
+        val sorted = children
             .parallelStream()
             .sorted { a, b -> a.result.compareTo(b.result) }
             .toList()
-        arrayProvider.toReuse(toList.stream().skip(grandfathersSize).map { it.path })
-        return toList.take(survivorNumber)
+        arrayProvider.toReuse(sorted.stream().skip(grandfathersSize).map { it.path })
+        return sorted.take(survivorNumber)
     }
 
     private fun score(path: Path): Int {
