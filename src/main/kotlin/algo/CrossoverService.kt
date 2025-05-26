@@ -16,7 +16,7 @@ class CrossoverService(
     }
 
     fun crossover(parents: List<PathResult>): Stream<Path> =
-        iRange.parallelStream()
+        iRange.parallelStream()//todo two child
             .map { crossover(it, parents.random().path, parents.random().path) }
 
     fun crossover(
