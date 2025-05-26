@@ -11,12 +11,13 @@ import kotlin.system.measureTimeMillis
 
 val pointRepository = PointRepository()
 
-val STEPS_NO = listOf(1000)
-val POPULATION_SIZE = listOf(100_000)
+val STEPS_NO = listOf(100)
+val POPULATION_SIZE = listOf(50_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val GRANDFATHER_RATE = listOf(0.1f)
 val NN_RATE = listOf(0.1f)
+val TWO_OPT_RATE = listOf(0.1f)
 fun main() {
     printTime("Start: ")
     pointRepository.load("xit1083")
@@ -40,6 +41,7 @@ fun main() {
     groupAndPrintResults(results, "mutation") { x -> x.mutation.toString() }
     groupAndPrintResults(results, "population") { x -> x.population.toString() }
     groupAndPrintResults(results, "grandfather") { x -> x.grandfather.toString() }
+    groupAndPrintResults(results, "initTwoOptRate") { x -> x.initTwoOptRate.toString() }
     groupAndPrintResults(results, "initNnRate") { x -> x.initNnRate.toString() }
     printTime("End: ")
 }
@@ -52,8 +54,10 @@ private fun prepareParameters(): List<ResultKey> = STEPS_NO.flatMap { steps ->
         SURVIVOR_RATE.flatMap { survivor ->
             MUTATION_CHANCE.flatMap { mutation ->
                 GRANDFATHER_RATE.flatMap { grandfather ->
-                    NN_RATE.map { initNnRate ->
-                        ResultKey(steps, population, survivor, mutation, grandfather, initNnRate)
+                    TWO_OPT_RATE.flatMap { twoOptRate ->
+                        NN_RATE.map { initNnRate ->
+                            ResultKey(steps, population, survivor, mutation, grandfather, twoOptRate, initNnRate)
+                        }
                     }
                 }
             }
@@ -80,6 +84,7 @@ data class ResultKey(
     val survivor: Float,
     val mutation: Float,
     val grandfather: Float,
+    val initTwoOptRate: Float,
     val initNnRate: Float,
 ) {
     override fun toString(): String =
@@ -87,5 +92,6 @@ data class ResultKey(
                 "Survivor: ${df.format(survivor)}; " +
                 "Mutation: ${df.format(mutation)}; " +
                 "Grandfather: ${df.format(grandfather)}; " +
+                "2 Opt: ${df.format(initTwoOptRate)}; " +
                 "NN rate: ${df2.format(initNnRate)}"
 }

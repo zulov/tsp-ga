@@ -25,6 +25,7 @@ class Resolver(
     private var grandfathersSize = 0L
     private var childrenSize = 0
     private var initNNRateSize = 0
+    private var init2optRateSize = 0
     private var initRandomRateSize = 0
 
     private var accumTimeStep = 0L
@@ -36,7 +37,8 @@ class Resolver(
         this.survivorNumber = (populationSize * key.survivor).toInt()
         this.grandfathersSize = (populationSize * key.grandfather).toLong()
         this.initNNRateSize = (populationSize * key.initNnRate).toInt()
-        this.initRandomRateSize = populationSize - initNNRateSize
+        this.init2optRateSize = (populationSize * key.initTwoOptRate).toInt()
+        this.initRandomRateSize = populationSize - initNNRateSize - init2optRateSize
         this.childrenSize = (populationSize - grandfathersSize).toInt()
         val points = pointRepository.getPoints()
         crossoverService.init(points.size, childrenSize)
@@ -61,17 +63,25 @@ class Resolver(
         return parents.first()
     }
 
-    private fun createChildren(): List<PathResult> =
-        initialPopulationCreator.create(pointRepository.getIds(), initNNRateSize, initRandomRateSize).map {
-            PathResult(it, score(it))
+    private fun createChildren(): List<PathResult> {
+        var population: List<PathResult> = emptyList()
+        measureTimeMillis {
+            population =
+                initialPopulationCreator.create(pointRepository.getIds(), init2optRateSize, initNNRateSize, initRandomRateSize).map {
+                    PathResult(it, score(it))
+                }
+        }.let {
+            println("Initial population created in ${df2.format(it / 1000.0)}s, ${it / population.size}ms per path")
         }
+        return population
+    }
 
     private fun logProgress(i: Int, parents: List<PathResult>, stepTime: Long) {
         accumTimeStep += stepTime
         if (i % 100 == 0) {
             val f = parents.first().result
             val l = parents.last().result.toFloat()
-            val percent = if (i + 1 == stepsNo) "DONE!" else dfP.format(i / (stepsNo / 100.0)) + "%"
+            val percent = if (i == stepsNo) "DONE!" else dfP.format(i / (stepsNo / 100.0)) + "%"
 
             println(
                 "Progress: $percent, " +
