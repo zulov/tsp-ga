@@ -67,11 +67,11 @@ class Resolver(
         var population: List<PathResult> = emptyList()
         measureTimeMillis {
             population =
-                initialPopulationCreator.create(pointRepository.getIds(), init2optRateSize, initNNRateSize, initRandomRateSize).map {
-                    PathResult(it, score(it))
-                }
+                initialPopulationCreator.create(pointRepository.getIds(), init2optRateSize, initNNRateSize, initRandomRateSize)
+                    .map { PathResult(it, score(it)) }
         }.let {
-            println("Initial population created in ${df2.format(it / 1000.0)}s, ${it / population.size}ms per path")
+            println("Initial population created in ${df2.format(it / 1000.0)}s," +
+                    " ${(it / population.size)*100}ms per 100 paths")
         }
         return population
     }

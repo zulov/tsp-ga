@@ -1,23 +1,32 @@
 package pl.zulov.algo
 
+import java.util.stream.IntStream
+import java.util.stream.IntStream.*
+import java.util.stream.Stream
 import kotlin.random.Random
 
 class InitialPopulationCreator(
     private val costService: CostService
 ) {
     private var n: Int = 0
-    private lateinit var visited: BooleanArray
+    private lateinit var visitedPool: Array<BooleanArray>
 
     fun create(points: Path, init2optRateSize: Int, initNNRateSize: Int, initRandomRateSize: Int): List<Path> {
-        visited = BooleanArray(points.size)
+        visitedPool = Array(initNNRateSize) { BooleanArray(points.size) { false } }
         n = points.size
-        return List(init2optRateSize) { twoOpt(points) } +
-                List(initNNRateSize) { nnPath(points) } +
-                List(initRandomRateSize) { points.copyOf().also { it.shuffle() } }
+        return Stream.concat(
+            Stream.concat(
+                range(0, init2optRateSize).mapToObj { twoOpt(points) },
+                range(0, initNNRateSize).mapToObj { nnPath(it, points) }),
+            range(0, initRandomRateSize).mapToObj { points.copyOf().also { it.shuffle() } }
+        )
+            .parallel()
+            .toList()
     }
 
-    private fun nnPath(points: Path): Path {
-        visited.fill(false)
+    private fun nnPath(i: Int, points: Path): Path {
+        val visited = visitedPool[i]
+        // visited.fill(false)
         val path = Path(n)
         var currentIdx = Random.nextInt(n)
         path[0] = points[currentIdx]
