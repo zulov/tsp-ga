@@ -82,21 +82,15 @@ class Resolver(
             val f = parents.first().result
             val l = parents.last().result.toFloat()
             val percent = if (i == stepsNo) "DONE!" else dfP.format(i / (stepsNo / 100.0)) + "%"
-            val variance = calculateVariance(parents)
+
             println(
                 "Progress: $percent, " +
                         "best:$green $f$reset, " +
-                        "var: ${df.format(variance)}% " +
+                        "range: ${df.format(l / f * 100.0F)}% " +
                         "time: ${df.format(accumTimeStep / 1000.0)}s"
             )
             accumTimeStep = 0L
         }
-    }
-
-    private fun calculateVariance(parents: List<PathResult>): Float {
-        val mean = FloatArray(parents.size){0.0F}
-        //policzyc czestosc wystepowania danej liczby posortowac od najczescoek wystepujacych
-        return 0.0F
     }
 
     private fun crossOverAndMutateAndScore(parents: List<PathResult>): List<PathResult> = Stream.concat(
