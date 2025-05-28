@@ -71,7 +71,7 @@ class Resolver(
                     .map { PathResult(it, score(it)) }
         }.let {
             println("Initial population created in ${df2.format(it / 1000.0)}s," +
-                    " ${(it / population.size)*100}ms per 100 paths")
+                    " ${(it / population.size.toFloat())*100}ms per 100 paths")
         }
         return population
     }
@@ -82,15 +82,21 @@ class Resolver(
             val f = parents.first().result
             val l = parents.last().result.toFloat()
             val percent = if (i == stepsNo) "DONE!" else dfP.format(i / (stepsNo / 100.0)) + "%"
-
+            val variance = calculateVariance(parents)
             println(
                 "Progress: $percent, " +
                         "best:$green $f$reset, " +
-                        "range: ${df.format(l / f * 100.0F)}% " +
+                        "var: ${df.format(variance)}% " +
                         "time: ${df.format(accumTimeStep / 1000.0)}s"
             )
             accumTimeStep = 0L
         }
+    }
+
+    private fun calculateVariance(parents: List<PathResult>): Float {
+        val mean = FloatArray(parents.size){0.0F}
+        //policzyc czestosc wystepowania danej liczby posortowac od najczescoek wystepujacych
+        return 0.0F
     }
 
     private fun crossOverAndMutateAndScore(parents: List<PathResult>): List<PathResult> = Stream.concat(
