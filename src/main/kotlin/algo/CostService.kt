@@ -20,7 +20,21 @@ class CostService {
 
     fun getCost(f: Id, t: Id): Short = costs[f * size + t]
 
+    fun getCostDelta(a: Id, b: Id, c: Id, d: Id): Int =
+        getCost(a, b) + getCost(c, d) - getCost(a, c) - getCost(b, d)
+
     fun getCost(f: Point, t: Point): Short =
         sqrt((t.x - f.x) * (t.x - f.x) + (t.y - f.y) * (t.y - f.y)).roundToInt().toShort()
 
+    fun score(path: Path): Int {
+        var totalCost = 0
+        var from = path.first()
+        for (to in path) {
+            totalCost += getCost(from, to)
+            from = to
+        }
+
+        totalCost += getCost(path.last(), path.first())
+        return totalCost
+    }
 }

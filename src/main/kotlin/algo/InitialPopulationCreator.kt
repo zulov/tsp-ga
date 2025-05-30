@@ -1,12 +1,12 @@
 package pl.zulov.algo
 
-import java.util.stream.IntStream
 import java.util.stream.IntStream.*
 import java.util.stream.Stream
 import kotlin.random.Random
 
 class InitialPopulationCreator(
-    private val costService: CostService
+    private val costService: CostService,
+    private val twoOpt: TwoOpt,
 ) {
     private var n: Int = 0
     private lateinit var visitedPool: Array<BooleanArray>
@@ -16,7 +16,7 @@ class InitialPopulationCreator(
         n = points.size
         return Stream.concat(
             Stream.concat(
-                range(0, init2optRateSize).mapToObj { twoOpt(points) },
+                range(0, init2optRateSize).mapToObj { twoOpt.improve(points.copyOf().also { it.shuffle() }) },
                 range(0, initNNRateSize).mapToObj { nnPath(it, points) }),
             range(0, initRandomRateSize).mapToObj { points.copyOf().also { it.shuffle() } }
         )
@@ -35,8 +35,8 @@ class InitialPopulationCreator(
         for (i in 1 until n) {
             var nearestIdx = -1
             var minDist = Id.MAX_VALUE
+            val currentPoint = points[currentIdx]
             for (j in 0 until n) {
-                val currentPoint = points[currentIdx]
                 if (!visited[j]) {
                     val dist = costService.getCost(currentPoint, points[j])
                     if (dist < minDist) {
@@ -57,15 +57,13 @@ class InitialPopulationCreator(
         val result = path.copyOf().also { it.shuffle() }
         while (improved) {
             improved = false
-            for (i in 1 until n - 1) {// zapisac jako jedeą listę par
-                for (j in i + 1 until n) {//tu chyba jest błąd, powinno być j <= n moze wyzej tez?
+            for (i in 1 until n - 1) {
+                for (j in i + 1 until n) {
                     val a = result[i - 1]
                     val b = result[i]
                     val c = result[j - 1]
                     val d = result[j % n]
-                    val currentCost = costService.getCost(a, b) + costService.getCost(c, d)
-                    val newCost = costService.getCost(a, c) + costService.getCost(b, d)
-                    if (newCost < currentCost) {
+                    if (0 < costService.getCostDelta(a, b, c, d)) {
                         result.reverse(i, j)
                         improved = true
                     }

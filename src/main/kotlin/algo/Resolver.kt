@@ -15,7 +15,8 @@ class Resolver(
 ) {
     private val costService = CostService()
     private val arrayProvider = ArrayProvider()
-    private val initialPopulationCreator = InitialPopulationCreator(costService)
+    private val twoOpt = TwoOpt(costService)
+    private val initialPopulationCreator = InitialPopulationCreator(costService, twoOpt)
     private val crossoverService = CrossoverService(arrayProvider)
 
     private var stepsNo = 0
@@ -59,7 +60,7 @@ class Resolver(
 
             logProgress(i + 1, parents, stepTime)
         }
-
+        println("twoOpt counter:" + twoOpt.counter)
         return parents.first()
     }
 
@@ -67,11 +68,18 @@ class Resolver(
         var population: List<PathResult> = emptyList()
         measureTimeMillis {
             population =
-                initialPopulationCreator.create(pointRepository.getIds(), init2optRateSize, initNNRateSize, initRandomRateSize)
-                    .map { PathResult(it, score(it)) }
+                initialPopulationCreator.create(
+                    pointRepository.getIds(),
+                    init2optRateSize,
+                    initNNRateSize,
+                    initRandomRateSize
+                )
+                    .map { PathResult(it, costService.score(it)) }
         }.let {
-            println("Initial population created in ${df2.format(it / 1000.0)}s," +
-                    " ${(it / population.size.toFloat())*100}ms per 100 paths")
+            println(
+                "Initial population created in ${df2.format(it / 1000.0)}s," +
+                        " ${df2.format((it / population.size.toFloat()) * 100)}ms per 100 paths"
+            )
         }
         return population
     }
@@ -97,17 +105,19 @@ class Resolver(
         parents.stream().limit(grandfathersSize),
         crossoverService.crossover(parents)
             .peek { mutate(it) }
-            .map { PathResult(it, score(it)) }
+            .map { PathResult(it, costService.score(it)) }
     ).toList()
 
     private fun mutate(path: Path) {
-        if ((Random.nextFloat() < mutationChance)) {
+        if (Random.nextFloat() < mutationChance) {
             val i = Random.nextInt(path.size)
             val j = Random.nextInt(path.size)
 
             val t = path[i]
             path[i] = path[j]
             path[j] = t
+        } else if (Random.nextFloat() < 0.05f) {
+            twoOpt.improve(path)
         }
     }
 
@@ -120,18 +130,6 @@ class Resolver(
             .toList()
         arrayProvider.toReuse(sorted.stream().skip(grandfathersSize).map { it.path })
         return sorted.take(survivorNumber)
-    }
-
-    private fun score(path: Path): Int {
-        var totalCost = 0
-        var from = path.first()
-        for (to in path) {
-            totalCost += costService.getCost(from, to)
-            from = to
-        }
-
-        totalCost += costService.getCost(path.last(), path.first())
-        return totalCost
     }
 
 }
