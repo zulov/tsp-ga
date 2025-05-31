@@ -14,8 +14,8 @@ val STEPS_NO = listOf(2_000)
 val POPULATION_SIZE = listOf(10_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
-val TWO_OPT_MUTATION_CHANCE = listOf(0.05f,0.1f)
-val TWO_OPT_MUTATION_LIMIT = listOf(1,2,3,5,10)
+val TWO_OPT_MUTATION_CHANCE = listOf(0.05f, 0.1f)
+val TWO_OPT_MUTATION_LIMIT = listOf(1, 2, 3, 5, 10)
 val GRANDFATHER_RATE = listOf(0.1f)
 val NN_RATE = listOf(0.1f)
 val TWO_OPT_RATE = listOf(0.1f)
@@ -29,7 +29,17 @@ val params = STEPS_NO.flatMap { steps ->
                         GRANDFATHER_RATE.flatMap { grandfather ->
                             TWO_OPT_RATE.flatMap { twoOptRate ->
                                 NN_RATE.map { initNnRate ->
-                                    ResultKey(steps, population, survivor, mutation, twpOptMutation, twpOptMutationLimit, grandfather, twoOptRate, initNnRate)
+                                    ResultKey(
+                                        steps,
+                                        population,
+                                        survivor,
+                                        mutation,
+                                        twpOptMutation,
+                                        twpOptMutationLimit,
+                                        grandfather,
+                                        twoOptRate,
+                                        initNnRate
+                                    )
                                 }
                             }
                         }
@@ -58,9 +68,10 @@ fun main() {
     }
 
     println("Results:")
-    results.sortedBy { it.second.distance }.forEach { println("${it.first} -> ${it.second.distance}, ${it.second.time}s") }
+    results.sortedBy { it.second.distance }
+        .forEach { println("${it.first} -> ${it.second.distance}, ${it.second.time}s") }
     println("Grouped:")
-    ResultKey.params().forEach { (name, fn) ->groupAndPrintResults(results, name,fn) }
+    ResultKey.params().forEach { (name, fn) -> groupAndPrintResults(results, name, fn) }
 
     printTime("End: ")
 }
@@ -68,21 +79,25 @@ fun main() {
 private fun printTime(prefix: String): Unit =
     println(prefix + LocalTime.now().format(timeFormatter))
 
-fun groupAndPrintResults(results: List<Pair<ResultKey, Result>>, name: String, getter: (ResultKey) -> String) {
-    val lines = results.map { getter(it.first) to it.second }
+fun groupAndPrintResults(results: List<Pair<ResultKey, Result>>, name: String, getter: (ResultKey) -> String) =
+    results.map { getter(it.first) to it.second }
         .groupBy { it.first }
-        .map { it.key to (it.value.map { it.second.distance }.average() to it.value.map { it.second.time }.average().toInt()) }
+        .map {
+            it.key to (it.value.map { it.second.distance }.average() to it.value.map { it.second.time }.average()
+                .toInt())
+        }
         .sortedBy { it.second.first }
         .map { (value, result) -> "\t$value -> ${df.format(result.first)}, ${result.second}s" }
-    if (lines.size > 1) {
-        println("By $name:")
-        lines.forEach { println(it) }
-    }
-}
+        .takeIf { it.size > 1 }
+        ?.let {
+            println("By $name:")
+            it.forEach { println(it) }
+        }
+
 
 data class Result(
-    val distance:Int,
-    val time:Int,
+    val distance: Int,
+    val time: Int,
 )
 
 data class ResultKey(
