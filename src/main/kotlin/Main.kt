@@ -11,7 +11,7 @@ import kotlin.collections.listOf
 import kotlin.system.measureTimeMillis
 
 val STEPS_NO = listOf(2_000)
-val POPULATION_SIZE = listOf(10_000)
+val POPULATION_SIZE = listOf(2_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val TWO_OPT_MUTATION_CHANCE = listOf(0.1f)
@@ -30,15 +30,15 @@ val params = STEPS_NO.flatMap { steps ->
                             TWO_OPT_RATE.flatMap { twoOptRate ->
                                 NN_RATE.map { initNnRate ->
                                     ResultKey(
-                                        steps,
-                                        population,
-                                        survivor,
-                                        mutation,
-                                        twpOptMutation,
-                                        twpOptMutationLimit,
-                                        grandfather,
-                                        twoOptRate,
-                                        initNnRate
+                                        steps = steps,
+                                        population = population,
+                                        survivor = survivor,
+                                        mutation = mutation,
+                                        twoOptMutation = twpOptMutation,
+                                        twoOptMutationLimit = twpOptMutationLimit,
+                                        grandfather = grandfather,
+                                        initTwoOptRate = twoOptRate,
+                                        initNnRate = initNnRate
                                     )
                                 }
                             }
@@ -53,7 +53,7 @@ val params = STEPS_NO.flatMap { steps ->
 fun main() {
     printTime("Start: ")
     val pointRepository = PointRepository()
-    pointRepository.load("xit1083")
+    pointRepository.load("gr9882")
 
     val results: MutableList<Pair<ResultKey, Result>> = mutableListOf()
     val resolver = Resolver(pointRepository)
@@ -82,18 +82,20 @@ private fun printTime(prefix: String): Unit =
 fun groupAndPrintResults(results: List<Pair<ResultKey, Result>>, name: String, getter: (ResultKey) -> String) =
     results.map { getter(it.first) to it.second }
         .groupBy { it.first }
-        .map {
-            it.key to (it.value.map { it.second.distance }.average() to it.value.map { it.second.time }.average()
-                .toInt())
-        }
-        .sortedBy { it.second.first }
-        .map { (value, result) -> "\t$value -> ${df.format(result.first)}, ${result.second}s" }
+        .map { it.key to Result(avgDist(it.value) , avgTime(it.value)) }
+        .sortedBy { it.second.distance }
+        .map { (value, result) -> "\t$value -> ${df.format(result.distance)}, ${result.time}s" }
         .takeIf { it.size > 1 }
         ?.let {
             println("By $name:")
-            it.forEach { println(it) }
+            it.forEach { line -> println(line) }
         }
 
+private fun avgTime(value: List<Pair<String, Result>>): Int =
+    value.map { it.second.time }.average().toInt()
+
+private fun avgDist(value: List<Pair<String, Result>>): Int =
+    value.map { it.second.distance }.average().toInt()
 
 data class Result(
     val distance: Int,
