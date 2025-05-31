@@ -22,6 +22,8 @@ class Resolver(
     private var stepsNo = 0
     private var populationSize = 0
     private var mutationChance = 0.0f
+    private var twoOptMutationChance = 0.0f
+    private var twoOptMutationLimit = 0
     private var survivorNumber = 0
     private var grandfathersSize = 0L
     private var childrenSize = 0
@@ -35,6 +37,8 @@ class Resolver(
         this.stepsNo = key.steps
         this.populationSize = key.population
         this.mutationChance = key.mutation
+        this.twoOptMutationChance = key.twoOptMutation
+        this.twoOptMutationLimit = key.twoOptMutationLimit
         this.survivorNumber = (populationSize * key.survivor).toInt()
         this.grandfathersSize = (populationSize * key.grandfather).toLong()
         this.initNNRateSize = (populationSize * key.initNnRate).toInt()
@@ -60,7 +64,6 @@ class Resolver(
 
             logProgress(i + 1, parents, stepTime)
         }
-        println("twoOpt counter:" + twoOpt.counter)
         return parents.first()
     }
 
@@ -116,8 +119,8 @@ class Resolver(
             val t = path[i]
             path[i] = path[j]
             path[j] = t
-        } else if (Random.nextFloat() < 0.05f) {
-            twoOpt.improve(path)
+        } else if (Random.nextFloat() < twoOptMutationChance) {
+            twoOpt.improve(path, twoOptMutationLimit)
         }
     }
 

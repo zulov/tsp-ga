@@ -3,13 +3,14 @@ package pl.zulov.algo
 class TwoOpt(
     private val costService: CostService,
 ) {
-    var counter = 0
+    var totalCounter = 0
 
-    fun improve(path: Path,limit:Int =100): Path {
-        ++counter;
+    fun improve(path: Path, limit: Int = 100): Path {
+        ++totalCounter
+        var c = 0
         var improved = true
         val n = path.size
-        while (improved) {//TODO use limit and test
+        while (improved && c < limit) {
             improved = false
             for (i in 1 until n - 1) {
                 for (j in i + 1 until n) {
@@ -23,7 +24,9 @@ class TwoOpt(
                     }
                 }
             }
+            c++
         }
+
         return path
     }
 }
