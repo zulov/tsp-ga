@@ -16,9 +16,9 @@ class InitialPopulationCreator(
         n = points.size
         return Stream.concat(
             Stream.concat(
-                range(0, init2optRateSize).mapToObj { twoOpt.improve(points.copyOf().also { it.shuffle() }) },
-                range(0, initNNRateSize).mapToObj { nnPath(it, points) }),
-            range(0, initRandomRateSize).mapToObj { points.copyOf().also { it.shuffle() } }
+                range(0, init2optRateSize).parallel().mapToObj { twoOpt.improve(points.copyOf().also { it.shuffle() }) },
+                range(0, initNNRateSize).parallel().mapToObj { nnPath(it, points) }),
+            range(0, initRandomRateSize).parallel().mapToObj { points.copyOf().also { it.shuffle() } }
         )
             .parallel()
             .toList()
@@ -50,27 +50,6 @@ class InitialPopulationCreator(
             visited[currentIdx] = true
         }
         return path
-    }
-
-    private fun twoOpt(path: Path): Path {
-        var improved = true
-        val result = path.copyOf().also { it.shuffle() }
-        while (improved) {
-            improved = false
-            for (i in 1 until n - 1) {
-                for (j in i + 1 until n) {
-                    val a = result[i - 1]
-                    val b = result[i]
-                    val c = result[j - 1]
-                    val d = result[j % n]
-                    if (0 < costService.getCostDelta(a, b, c, d)) {
-                        result.reverse(i, j)
-                        improved = true
-                    }
-                }
-            }
-        }
-        return result
     }
 
 }

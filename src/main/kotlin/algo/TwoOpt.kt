@@ -5,7 +5,7 @@ class TwoOpt(
 ) {
     var totalCounter = 0
 
-    fun improve(path: Path, limit: Int = 100): Path {
+    fun improve(path: Path, limit: Int = 5): Path {
         ++totalCounter
         var c = 0
         var improved = true
