@@ -5,6 +5,7 @@ class TwoOpt(
 ) {
     var totalCounter = 0
 
+    // ocenianie poprawy tylko na fragmencie ma sens jeżeli koszt w obie strony jest taki sam
     fun improve(path: Path, limit: Int = 5): Path {
         ++totalCounter
         var c = 0
@@ -13,11 +14,11 @@ class TwoOpt(
         while (improved && c < limit) {
             improved = false
             for (i in 1 until n - 1) {
-                for (j in i + 1 until n) {
-                    val a = path[i - 1]
+                val a = path[i - 1]
+                for (j in i + 2 until n) {
                     val b = path[i]
                     val c = path[j - 1]
-                    val d = path[j % n]
+                    val d = path[j]
                     if (0 < costService.getCostDelta(a, b, c, d)) {
                         path.reverse(i, j)
                         improved = true
