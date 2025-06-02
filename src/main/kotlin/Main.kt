@@ -67,13 +67,17 @@ fun main() {
         println("${(i + 1)}/${params.size} Time process: ${processTime / 1000}s, per step: ${processTime / p.steps} ms")
     }
 
+    printResult(results)
+
+    printTime("End: ")
+}
+
+private fun printResult(results: MutableList<Pair<ResultKey, Result>>) {
     println("Results:")
     results.sortedBy { it.second.distance }
         .forEach { println("${it.first} -> ${it.second.distance}, ${it.second.time}s") }
     println("Grouped:")
     ResultKey.params().forEach { (name, fn) -> groupAndPrintResults(results, name, fn) }
-
-    printTime("End: ")
 }
 
 private fun printTime(prefix: String): Unit =
@@ -113,27 +117,21 @@ data class ResultKey(
     val initTwoOptRate: Float,
     val initNnRate: Float,
 ) {
-    override fun toString(): String =
-        "Steps: $steps; Pop: $population; " +
-                "Survivor: ${df.format(survivor)}; " +
-                "Mutation: ${df.format(mutation)}; " +
-                "2 Opt Mutation: ${df.format(twoOptMutation)}; " +
-                "2 Opt Mutation Limit: $twoOptMutationLimit; " +
-                "Grandfather: ${df.format(grandfather)}; " +
-                "2 Opt: ${df.format(initTwoOptRate)}; " +
-                "NN rate: ${df2.format(initNnRate)}"
+    override fun toString(): String = params()
+        .joinToString(separator = ";") { (name, fn) -> name +": "+ fn(this) }
 
     companion object {
         fun params(): List<Pair<String, (ResultKey) -> String>> =
             listOf(
-                "Survivor" to { x -> x.survivor.toString() },
-                "Mutation" to { x -> x.mutation.toString() },
-                "2 Opt mutation" to { x -> x.twoOptMutation.toString() },
-                "2 Opt mutation Limit" to { x -> x.twoOptMutationLimit.toString() },
-                "Population" to { x -> x.population.toString() },
-                "Grandfather" to { x -> x.grandfather.toString() },
-                "InitTwoOptRate" to { x -> x.initTwoOptRate.toString() },
-                "InitNnRate" to { x -> x.initNnRate.toString() },
+                "Steps" to { x -> x.steps.toString() },
+                "Population" to { x -> x.survivor.toString() },
+                "Survivor" to { x -> "${df.format(x.survivor)}" },
+                "Mutation" to { x -> "${df.format(x.mutation)}" },
+                "2 Opt mutation" to { x -> "${df.format(x.twoOptMutation)}" },
+                "2 Opt mutation Limit" to { x -> "${x.twoOptMutationLimit}" },
+                "Grandfather" to { x -> "${df.format(x.grandfather)}" },
+                "2 Opt Rate" to { x -> "${df.format(x.initTwoOptRate)}"},
+                "NN Rate" to { x -> "${df2.format(x.initNnRate)}" },
             )
     }
 }
