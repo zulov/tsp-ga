@@ -14,11 +14,11 @@ val STEPS_NO = listOf(500)
 val POPULATION_SIZE = listOf(1_000)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
-val TWO_OPT_MUTATION_CHANCE = listOf(0.1f)
-val TWO_OPT_MUTATION_LIMIT = listOf(3)
+val TWO_OPT_MUTATION_CHANCE = listOf(0.01f)
+val TWO_OPT_MUTATION_LIMIT = listOf(2)
 val GRANDFATHER_RATE = listOf(0.1f)
 val NN_RATE = listOf(0.1f)
-val TWO_OPT_RATE = listOf(0.1f)
+val TWO_OPT_RATE = listOf(0.01f)
 
 val params = STEPS_NO.flatMap { steps ->
     POPULATION_SIZE.flatMap { population ->

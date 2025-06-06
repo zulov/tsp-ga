@@ -20,7 +20,7 @@ class TwoOpt(
                     val b = path[i]
                     val c = path[j - 1]
                     val d = path[j]
-                    if (0 < costService.getCostDelta(a, b, c, d)) {
+                    if (costService.deltaBelowZero(a, b, c, d)) {
                         path.reverse(i, j)
                         improved = true
                     }

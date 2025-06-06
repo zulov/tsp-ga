@@ -8,7 +8,7 @@ class CostService {
 
     private var costs: ShortArray = shortArrayOf()
     private var size: Int = 0
-
+    //TODO init only half of the matrix, because costs are symmetric
     fun init(points: List<Point>) {
         size = points.size
         costs = ShortArray(size * size) { index ->
@@ -20,8 +20,8 @@ class CostService {
 
     fun getCost(f: Id, t: Id): Short = costs[f * size + t]
 
-    fun getCostDelta(a: Id, b: Id, c: Id, d: Id): Int =
-        getCost(a, b) + getCost(c, d) - getCost(a, c) - getCost(b, d)
+    fun deltaBelowZero(a: Id, b: Id, c: Id, d: Id): Boolean =
+        0 < (getCost(a, b) + getCost(c, d) - getCost(a, c) - getCost(b, d))
 
     fun getCost(f: Point, t: Point): Short =
         sqrt((t.x - f.x) * (t.x - f.x) + (t.y - f.y) * (t.y - f.y)).roundToInt().toShort()
