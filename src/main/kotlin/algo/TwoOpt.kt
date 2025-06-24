@@ -6,7 +6,6 @@ class TwoOpt(
     var totalCounter = 0
 
     // ocenianie poprawy tylko na fragmencie ma sens jeżeli koszt w obie strony jest taki sam
-    // zrobic wersje że zamienniamy tylko najlepsze zyski z iteracji po j
     fun improve(path: Path, limit: Int = 5): Path {
         ++totalCounter
         var c = 0

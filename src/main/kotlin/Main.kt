@@ -10,8 +10,8 @@ import java.time.LocalTime
 import kotlin.collections.listOf
 import kotlin.system.measureTimeMillis
 
-val STEPS_NO = listOf(500)
-val POPULATION_SIZE = listOf(1_000)
+val STEPS_NO = listOf(200)
+val POPULATION_SIZE = listOf(500)
 val SURVIVOR_RATE = listOf(0.8F)
 val MUTATION_CHANCE = listOf(0.3F)
 val TWO_OPT_MUTATION_CHANCE = listOf(0.01f)
