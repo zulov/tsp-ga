@@ -18,6 +18,7 @@ class Resolver(
     private val twoOpt = TwoOpt(costService)
     private val initialPopulationCreator = InitialPopulationCreator(costService, twoOpt)
     private val crossoverService = CrossoverService(arrayProvider)
+    private val varianceCalculator = VarianceCalculator()
 
     private var stepsNo = 0
     private var populationSize = 0
@@ -93,11 +94,13 @@ class Resolver(
             val f = parents.first().result
             val l = parents.last().result.toFloat()
             val percent = if (i == stepsNo) "DONE!" else dfP.format(i / (stepsNo / 100.0)) + "%"
+            val diversity = varianceCalculator.calculateVariance(parents)
 
             println(
                 "Progress: $percent, " +
                         "best:$green $f$reset, " +
-                        "range: ${df.format(l / f * 100.0F)}% " +
+                        "range: ${df.format(l / f * 100.0F)}%, " +
+                        "diversity: ${df.format(diversity * 100)}%, " +
                         "time: ${df.format(accumTimeStep / 1000.0)}s"
             )
             accumTimeStep = 0L
