@@ -115,14 +115,15 @@ class Resolver(
     ).toList()
 
     private fun mutate(path: Path) {
-        if (Random.nextFloat() < mutationChance) {
+        val r = Random.nextFloat()
+        if (r < mutationChance) {
             val i = Random.nextInt(path.size)
             val j = Random.nextInt(path.size)
 
             val t = path[i]
             path[i] = path[j]
             path[j] = t
-        } else if (Random.nextFloat() < twoOptMutationChance) {
+        } else if (r < mutationChance + twoOptMutationChance) {
             twoOpt.improve(path, twoOptMutationLimit)
         }
     }

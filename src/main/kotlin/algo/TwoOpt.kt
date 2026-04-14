@@ -3,11 +3,9 @@ package pl.zulov.algo
 class TwoOpt(
     private val costService: CostService,
 ) {
-    var totalCounter = 0
 
     // ocenianie poprawy tylko na fragmencie ma sens jeżeli koszt w obie strony jest taki sam
     fun improve(path: Path, limit: Int = 5): Path {
-        ++totalCounter
         var c = 0
         var improved = true
         val n = path.size

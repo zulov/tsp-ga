@@ -124,7 +124,7 @@ data class ResultKey(
         fun params(): List<Pair<String, (ResultKey) -> String>> =
             listOf(
                 "Steps" to { x -> x.steps.toString() },
-                "Population" to { x -> x.survivor.toString() },
+                "Population" to { x -> x.population.toString() },
                 "Survivor" to { x -> "${df.format(x.survivor)}" },
                 "Mutation" to { x -> "${df.format(x.mutation)}" },
                 "2 Opt mutation" to { x -> "${df.format(x.twoOptMutation)}" },
